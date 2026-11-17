@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+{% set is_cust = ct.type == 'customer' %}
+<div class="toolbar">
+  <a class="btn ghost sm" href="/contacts?tab={{ 'customer' if is_cust else 'vendor' }}">{{ icon('chevron', 14) }} All {{ 'customers' if is_cust else 'suppliers' }}</a>
+  <div style="margin-left:auto">
+    <a class="btn sm" href="{{ '/invoices/new' if is_cust else '/bills/new' }}">{{ icon('plus', 14) }} New {{ 'invoice' if is_cust else 'bill' }}</a>
+  </div>
+</div>
+<div class="dash-grid g32">
+  <div>
+    <div class="card mb2">
+      <div class="card-b" style="display:flex;gap:16px;align-items:center">
+        <div class="avatar lg" style="background:hsl({{ ct.name|avatar_hue }} 70% 93%);color:hsl({{ ct.name|avatar_hue }} 55% 32%);width:56px;height:56px;font-size:19px">{{ ct.name|initials }}</div>
+        <div style="flex:1">
+          <div style="font-size:18px;font-weight:750;letter-spacing:-.02em">{{ ct.name }}</div>
+          <div class="small muted">{{ ct.email or '—' }} · {{ ct.phone or '—' }}</div>
+          <div class="row mt1" style="gap:6px">
+            <span class="chip {{ 'chip-info' if is_cust else 'chip-warn' }}">{{ 'Customer' if is_cust else 'Supplier' }}</span>
+            {% if ct.tax_no %}<span class="chip chip-muted">VAT {{ ct.tax_no }}</span>{% endif %}
+            <span class="chip chip-muted">Since {{ ct.created_at|ddate }}</span>
+          </div>
+        </div>
+        <div class="right">
+          <div class="tiny faint" style="font-weight:700;letter-spacing:.06em">{{ 'BALANCE OWED' if is_cust else 'YOU OWE' }}</div>
+          <div style="font-size:24px;font-weight:750;letter-spacing:-.03em">{{ sym }}{{ balance|money }}</div>
+          <div class="tiny muted">{{ docs|length }} document{{ '' if docs|length == 1 else 's' }} · {{ sym }}{{ total|compact }} lifetime</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><h3>{{ 'Invoices' if is_cust else 'Bills' }}</h3><div class="sub">Full transaction history</div></div></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Number</th><th>Date</th><th>Due</th><th class="num">Total</th><th class="num">Balance</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for d in docs %}
+            {% set st = status_of(d) %}
+            <tr>
+              <td><a class="link-strong" href="{{ '/invoices/' + d.id|string if is_cust else '/bills/' + d.id|string }}">{{ d.number }}</a></td>
+              <td class="muted">{{ d.date|ddate }}</td>
+              <td class="muted">{{ d.due_date|ddate }}</td>
+              <td class="num">{{ sym }}{{ d.total|money }}</td>
+              <td class="num">{{ sym }}{{ (d.total - d.amount_paid)|money }}</td>
+              <td><span class="chip {{ st.cls }}">{{ st.label }}</span></td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6"><div class="empty">{{ icon('file', 26) }}<b>No documents yet</b></div></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Contact details</h3></div></div>
+      <div class="card-b">
+        <dl class="kv">
+          <dt>Type</dt><dd>{{ 'Customer' if is_cust else 'Supplier' }}</dd>
+          <dt>Company</dt><dd>{{ ct.company or ct.name }}</dd>
+          <dt>Email</dt><dd>{{ ct.email or '—' }}</dd>
+          <dt>Phone</dt><dd>{{ ct.phone or '—' }}</dd>
+          <dt>Address</dt><dd>{{ ct.address or '—' }}</dd>
+          <dt>Tax number</dt><dd>{{ ct.tax_no or '—' }}</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><h3>Payments</h3><div class="sub">Cash movements with this contact</div></div></div>
+      <div class="card-b tight" style="padding:4px 16px 12px">
+        {% for p2 in pays[:6] %}
+        <div class="activity">
+          <span class="act-ic payment">{{ icon('card', 13) }}</span>
+          <div><b>{{ sym }}{{ p2.amount|money }}</b><span>{{ p2.method }} · {{ p2.date|ddate }}</span></div>
+          <span class="chip {{ 'chip-good' if p2.kind == 'received' else 'chip-bad' }}" style="margin-left:auto">{{ 'in' if p2.kind == 'received' else 'out' }}</span>
+        </div>
+        {% else %}<div class="empty" style="padding:18px">{{ icon('card', 22) }}<b>No payments</b></div>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

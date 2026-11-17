@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+<div class="setup-banner mb2">
+  <span class="icon-circle" style="background:rgba(255,255,255,.1);color:#9fb8ff">{{ icon('layers', 22) }}</span>
+  <div style="flex:1">
+    <h3>Industry setup — tailor Tatmaq Books to how your sector earns money</h3>
+    <p>Activating a template rebuilds the chart of accounts, billing items, contact book, asset register and 12 months of demonstration transactions for that industry. Your current workspace is replaced, so try each template freely before committing real data.</p>
+  </div>
+</div>
+
+<div class="dash-grid g2">
+{% for key, p in profiles.items() %}
+  <div class="profile-card {{ 'current' if key == current }}">
+    {% if key == current %}<span class="current-flag"><span class="chip chip-good">{{ icon('check', 11) }} Active</span></span>{% endif %}
+    <div class="ind-ic">{{ icon(p.icon, 22) }}</div>
+    <h4>{{ p.label }}</h4>
+    <p>{{ p.tagline }}</p>
+    <div class="meta">
+      <span>{{ (42 + p.accounts|length) }} accounts</span>
+      <span>{{ p['items']|length }} billable items</span>
+      <span>KPI: {{ p.metric }}</span>
+      <span>{{ p.assets|length }} demo assets</span>
+    </div>
+    <form method="post" action="/setup/apply" class="acts" data-confirm="This replaces the current workspace with the {{ p.label }} template. Continue?">
+      <input type="hidden" name="profile" value="{{ key }}">
+      <button class="btn sm" name="mode" value="demo" type="submit">{{ icon('sparkle', 14) }} Activate + demo data</button>
+      <button class="btn soft sm" name="mode" value="clean" type="submit">Start clean</button>
+    </form>
+  </div>
+{% endfor %}
+</div>
+
+<div class="callout info mt3">{{ icon('sparkle', 15) }} <div><b>How tailoring works:</b> each template adds sector-specific income streams (e.g. <i>Concentrate &amp; Ore Sales</i> for mining, <i>Tuition Fees</i> for education, <i>Gross Premiums Written</i> for insurance), the right cost categories, demo customers, suppliers and fixed assets — and a sector KPI on the executive dashboard. Banking, insurance and hospitals also carry their regulatory-flavoured control accounts (customer deposits, unearned premium reserves, medical-aid receivables).</div></div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+{% set ns = namespace(g=0, p=0, a=0, n=0, net=0) %}
+{% for e in employees %}{% set ns.g = ns.g + e.gross %}{% set ns.p = ns.p + e.paye %}{% set ns.a = ns.a + e.aids %}{% set ns.n = ns.n + e.nssa %}{% set ns.net = ns.net + e.net %}{% endfor %}
+<form method="post" action="/payroll/new">
+<div class="dash-grid g23">
+  <div class="card">
+    <div class="card-h"><div><h3>Payroll preview — {{ period }}</h3><div class="sub">Calculated live on the ZIMRA USD PAYE bands shown in Settings</div></div></div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Employee</th><th class="num">Gross</th><th class="num">PAYE</th><th class="num">AIDS 3%</th><th class="num">NSSA 4.5%</th><th class="num">Net pay</th></tr></thead>
+        <tbody>
+        {% for e in employees %}
+          <tr>
+            <td><div class="strong">{{ e.name }}</div><span class="sub">{{ e.position }}</span></td>
+            <td class="num">{{ sym }}{{ e.gross|money }}</td>
+            <td class="num neg">−{{ sym }}{{ e.paye|money }}</td>
+            <td class="num neg">−{{ sym }}{{ e.aids|money }}</td>
+            <td class="num neg">−{{ sym }}{{ e.nssa|money }}</td>
+            <td class="num strong">{{ sym }}{{ e.net|money }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot class="tfoot"><tr>
+          <td>{{ employees|length }} employees</td>
+          <td class="num">{{ sym }}{{ ns.g|money }}</td>
+          <td class="num">{{ sym }}{{ ns.p|money }}</td>
+          <td class="num">{{ sym }}{{ ns.a|money }}</td>
+          <td class="num">{{ sym }}{{ ns.n|money }}</td>
+          <td class="num">{{ sym }}{{ ns.net|money }}</td>
+        </tr></tfoot>
+      </table>
+    </div>
+    <div class="card-b" style="border-top:1px solid var(--line-2)">
+      <div class="callout info">{{ icon('sparkle', 15) }} <div><b>Employer NSSA</b> of about {{ sym }}{{ (employees|length * 31.5)|money }} is added to staff cost and posted to NSSA payable — it is a company expense, not a deduction from employees.</div></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Run settings</h3></div></div>
+      <div class="card-b">
+        <div class="field"><label>Pay period</label><input class="input" name="period" value="{{ period }}" placeholder="YYYY-MM"></div>
+        <div class="field"><label>Payment date</label><input class="input" type="date" name="date" value="{{ today }}"></div>
+        <div class="field"><label>Pay from</label>
+          <select class="select"><option>CBZ Bank - USD Operating</option></select></div>
+        <div class="field"><label>Narrative</label><input class="input" value="Monthly payroll" disabled></div>
+        <button class="btn block" type="submit">{{ icon('check', 16) }} Process {{ sym }}{{ ns.net|compact }} net payroll</button>
+        <a class="btn soft block mt1" href="/payroll">Cancel</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><h3>Journal impact</h3></div></div>
+      <div class="card-b small" style="color:var(--ink-2);line-height:1.95">
+        <div class="row between"><span>Dr Salaries &amp; wages</span><b>{{ sym }}{{ ns.g|compact }}</b></div>
+        <div class="row between"><span>Dr Employer NSSA</span><b>~{{ sym }}{{ (employees|length * 31.5)|compact }}</b></div>
+        <div class="row between"><span>Cr PAYE payable</span><b>{{ sym }}{{ ns.p|compact }}</b></div>
+        <div class="row between"><span>Cr AIDS levy payable</span><b>{{ sym }}{{ ns.a|compact }}</b></div>
+        <div class="row between"><span>Cr NSSA payable</span><b>—</b></div>
+        <div class="row between"><span>Cr Net wages → Bank</span><b>{{ sym }}{{ ns.net|compact }}</b></div>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

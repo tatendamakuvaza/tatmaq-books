@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+<div class="dash-grid g23">
+  <div>
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Company profile</h3><div class="sub">Appears on invoices, statements and statutory reports</div></div></div>
+      <div class="card-b">
+        <form method="post" action="/settings">
+          <div class="form-grid fg2">
+            <div class="field"><label>Registered name</label><input class="input" name="name" value="{{ company.name }}"></div>
+            <div class="field"><label>Email</label><input class="input" name="email" value="{{ company.email }}"></div>
+            <div class="field"><label>Phone</label><input class="input" name="phone" value="{{ company.phone }}"></div>
+            <div class="field"><label>Address</label><input class="input" name="address" value="{{ company.address }}"></div>
+            <div class="field"><label>{{ company.tax_name }} name</label><input class="input" name="tax_name" value="{{ company.tax_name }}"></div>
+            <div class="field"><label>{{ company.tax_name }} rate (%)</label><input class="input" type="number" step="0.01" name="tax_rate" value="{{ company.tax_rate }}"></div>
+            <div class="field"><label>Fiscal year start</label><input class="input" type="date" name="fiscal_start" value="{{ company.fiscal_start }}"></div>
+            <div class="field"><label>Base currency code</label><input class="input" name="currency" value="{{ company.currency }}"></div>
+            <div class="field"><label>Currency symbol</label><input class="input" name="symbol" value="{{ company.symbol }}"></div>
+          </div>
+          <button class="btn mt1" type="submit">{{ icon('check', 15) }} Save settings</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Users &amp; roles</h3><div class="sub">Role-based access in the production build</div></div></div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+          {% for u in users %}
+            <tr><td><div class="row" style="gap:8px">
+              <div class="avatar sm" style="background:hsl({{ u.name|avatar_hue }} 70% 93%);color:hsl({{ u.name|avatar_hue }} 55% 32%)">{{ u.name|initials }}</div>
+              <span class="strong">{{ u.name }}</span></div></td>
+              <td class="muted">{{ u.email }}</td>
+              <td><span class="chip chip-muted">{{ roles.get(u.role, u.role) }}</span></td>
+              <td><span class="chip {{ 'chip-good' if u.status == 'Active' else 'chip-warn' }}">{{ u.status }}</span></td>
+              <td class="right">
+                {% if u.id != ident.user_id %}
+                <form method="post" action="/settings/users/{{ u.id }}/toggle">
+                  <button class="btn xs soft" type="submit">{{ 'Suspend' if u.status == 'Active' else 'Reactivate' }}</button>
+                </form>
+                {% else %}<span class="tiny muted">you</span>{% endif %}
+              </td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-b" style="border-top:1px solid var(--line-2)">
+        <form method="post" action="/settings/users" class="row" style="gap:8px;flex-wrap:wrap">
+          <input class="input" name="name" placeholder="Full name" style="flex:1;min-width:130px" required>
+          <input class="input" name="email" type="email" placeholder="Email" style="flex:1;min-width:150px" required>
+          <select class="select" name="role" style="width:170px">
+            {% for key, label in roles.items() if key != 'demo' %}
+            <option value="{{ key }}" {{ 'selected' if key == 'accountant' }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn sm" type="submit">{{ icon('plus', 14) }} Invite</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Your password</h3><div class="sub">Signed in as {{ ident.name }} · {{ perms.role_label }}</div></div></div>
+      <div class="card-b">
+        {% if perms.is_demo %}
+        <div class="callout info">{{ icon('eye', 15) }} <div>Demo visitors share a temporary workspace — passwords are managed by the real workspace owner.</div></div>
+        {% else %}
+        <form method="post" action="/settings/password">
+          <div class="field"><label>Current password</label>
+            <input class="input" type="password" name="current" autocomplete="current-password" required></div>
+          <div class="form-grid fg2">
+            <div class="field"><label>New password</label>
+              <input class="input" type="password" name="new" autocomplete="new-password" placeholder="min 8 characters" required></div>
+            <div class="field"><label>Confirm new</label>
+              <input class="input" type="password" name="confirm" autocomplete="new-password" required></div>
+          </div>
+          <button class="btn sm" type="submit">{{ icon('check', 14) }} Update password</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Currencies</h3><div class="sub">Indicative rates — editable in production</div></div></div>
+      <div class="tbl-wrap">
+        <table class="tbl compact">
+          <thead><tr><th>Code</th><th>Name</th><th class="num">Rate to USD</th></tr></thead>
+          <tbody>{% for c in currencies %}
+            <tr><td class="strong">{{ c.code }}</td><td class="muted">{{ c.name }}</td><td class="num">{{ c.rate|num(2) }}</td></tr>
+          {% endfor %}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Statutory (Zimbabwe)</h3></div></div>
+      <div class="card-b small" style="color:var(--ink-2);line-height:1.9">
+        <div class="row between"><span class="muted">PAYE bands</span><b>USD 0–100 free</b></div>
+        <div class="row between"><span class="muted">Marginal rates</span><b>20% → 40%</b></div>
+        <div class="row between"><span class="muted">AIDS levy</span><b>3% of PAYE</b></div>
+        <div class="row between"><span class="muted">NSSA (employee + employer)</span><b>4.5% + 4.5%</b></div>
+        <div class="row between"><span class="muted">NSSA insurable ceiling</span><b>$700 / month</b></div>
+        <div class="row between"><span class="muted">VAT return due</span><b>25th monthly</b></div>
+        <div class="row between"><span class="muted">PAYE return due</span><b>10th monthly</b></div>
+        <div class="divider" style="margin:10px 0"></div>
+        <span class="muted">Rates are indicative for demonstration. Confirm the current ZIMRA tables before filing.</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div><h3>Data &amp; demo controls</h3></div></div>
+      <div class="card-b">
+        <form method="post" action="/reset-demo" data-confirm="Regenerate demo data? Current entries will be replaced.">
+          <button class="btn soft block" type="submit">{{ icon('refresh', 15) }} Regenerate demo data</button>
+        </form>
+        <a class="btn soft block mt1" href="/setup">{{ icon('layers', 15) }} Change industry template</a>
+        <div class="callout info mt2">{{ icon('bank', 15) }} <div>Production data lives in a single SQLite file — back it up nightly with a one-line cron job. The deployment guide covers this.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

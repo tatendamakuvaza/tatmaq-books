@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+{% set hh = now.strftime('%H')|int %}
+{% set greeting = 'Good morning' if hh < 12 else ('Good afternoon' if hh < 17 else 'Good evening') %}
+{% set ind = profiles[company.industry] %}
+
+<!-- hero -->
+<section class="hero">
+  <div>
+    <h2>{{ greeting }}, {{ ident.name.split()[0] }}.</h2>
+    <div class="sub">{{ company.name }} · fiscal year from {{ company.fiscal_start|ddate }} · all figures in {{ company.currency }}</div>
+    <div class="hero-tags">
+      <span class="hero-tag">{{ icon(ind.icon, 14) }} {{ ind.label }}</span>
+      <span class="hero-tag">{{ icon('bank', 14) }} {{ company.tax_name }} {{ company.tax_rate|num }}% registered</span>
+      <span class="hero-tag">{{ icon('users', 14) }} {{ d.employees }} staff on payroll</span>
+      <span class="hero-tag">{{ icon('chart', 14) }} {{ d.cur_month }}</span>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-stat">
+      <span>Cash at bank</span>
+      <b>{{ sym }}{{ d.cash_total|compact }}</b>
+    </div>
+    <div class="hero-stat">
+      <span>Net profit YTD</span>
+      <b style="color:{{ '#7ef0c0' if d.pl_ytd.net >= 0 else '#ffb3c1' }}">{{ sym }}{{ d.pl_ytd.net|compact }}</b>
+    </div>
+    <div style="text-align:center">
+      <svg width="104" height="104" viewBox="0 0 104 104" aria-label="Financial health {{ d.health }} of 100">
+        <circle cx="52" cy="52" r="44" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="9"/>
+        <circle cx="52" cy="52" r="44" fill="none" stroke="{{ health_gauge.color }}" stroke-width="9"
+                stroke-linecap="round" stroke-dasharray="{{ (2*3.14159*44*d.health/100)|round(1) }} 999"
+                transform="rotate(-90 52 52)"/>
+        <text x="52" y="50" text-anchor="middle" fill="#fff" font-size="24" font-weight="700">{{ d.health }}</text>
+        <text x="52" y="66" text-anchor="middle" fill="#8fa6cc" font-size="8.5" letter-spacing="1.2">HEALTH</text>
+      </svg>
+      <div class="tiny" style="color:#8fa6cc;margin-top:2px">Financial health score</div>
+    </div>
+  </div>
+</section>
+
+<!-- KPI row -->
+<div class="dash-grid g4 mt2">
+  <div class="kpi">
+    <div class="kpi-label">{{ icon('dollar', 14) }} Revenue <span class="faint" style="margin-left:auto">{{ now.year }} YTD</span></div>
+    <div class="kpi-value">{{ sym }}{{ d.pl_ytd.revenue|compact }}</div>
+    <div class="kpi-foot">
+      <span class="delta {{ 'up' if d.rev_growth >= 0 else 'down' }}">
+        {{ icon('up-right' if d.rev_growth >= 0 else 'dn-right', 12) }} {{ d.rev_growth|abs|num(1) }}%
+      </span>
+      <span class="cap">vs last month</span>
+    </div>
+    <svg class="kpi-spark" width="150" height="56" viewBox="0 0 150 56" preserveAspectRatio="none">
+      <defs><linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2f6bff" stop-opacity=".22"/><stop offset="1" stop-color="#2f6bff" stop-opacity="0"/>
+      </linearGradient></defs>
+      <path d="{{ rev_spark.area }}" fill="url(#sg1)"/>
+      <path d="{{ rev_spark.path }}" fill="none" stroke="#2f6bff" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="kpi">
+    <div class="kpi-label">{{ icon('chart', 14) }} Net profit <span class="faint" style="margin-left:auto">YTD</span></div>
+    <div class="kpi-value" style="color:{{ 'var(--ink)' if d.pl_ytd.net >= 0 else 'var(--bad)' }}">{{ sym }}{{ d.pl_ytd.net|compact }}</div>
+    <div class="kpi-foot">
+      {% if d.net_growth is none %}
+      <span class="delta flat">{{ icon('chart', 12) }} new run-rate</span>
+      {% else %}
+      <span class="delta {{ 'up' if d.net_growth >= 0 else 'down' }}">
+        {{ icon('up-right' if d.net_growth >= 0 else 'dn-right', 12) }} {{ d.net_growth|abs|num(1) }}%
+      </span>
+      {% endif %}
+      <span class="cap">{{ d.pl_ytd.net_margin|num(1) }}% net margin</span>
+    </div>
+    <svg class="kpi-spark" width="150" height="56" viewBox="0 0 150 56" preserveAspectRatio="none">
+      <defs><linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0e9f6e" stop-opacity=".22"/><stop offset="1" stop-color="#0e9f6e" stop-opacity="0"/>
+      </linearGradient></defs>
+      <path d="{{ net_spark.area }}" fill="url(#sg2)"/>
+      <path d="{{ net_spark.path }}" fill="none" stroke="#0e9f6e" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="kpi">
+    <div class="kpi-label">{{ icon('bank', 14) }} Cash position <span class="faint" style="margin-left:auto">live</span></div>
+    <div class="kpi-value">{{ sym }}{{ d.cash_total|compact }}</div>
+    <div class="kpi-foot">
+      <span class="delta flat">{{ icon('clock', 12) }} {{ d.runway|num(1) }} mo runway</span>
+    </div>
+    <svg class="kpi-spark" width="150" height="56" viewBox="0 0 150 56" preserveAspectRatio="none">
+      <defs><linearGradient id="sg3" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0b6bcb" stop-opacity=".2"/><stop offset="1" stop-color="#0b6bcb" stop-opacity="0"/>
+      </linearGradient></defs>
+      <path d="{{ cash_spark.area }}" fill="url(#sg3)"/>
+      <path d="{{ cash_spark.path }}" fill="none" stroke="#0b6bcb" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="kpi">
+    <div class="kpi-label">{{ icon('file', 14) }} Receivables <span class="faint" style="margin-left:auto">outstanding</span></div>
+    <div class="kpi-value">{{ sym }}{{ d.ar|compact }}</div>
+    <div class="kpi-foot">
+      {% if d.overdue.c %}
+      <span class="delta down">{{ icon('alert', 12) }} {{ d.overdue.c }} overdue</span>
+      <span class="cap">{{ sym }}{{ d.overdue.v|compact }} at risk</span>
+      {% else %}
+      <span class="delta up">{{ icon('check', 12) }} All current</span>
+      {% endif %}
+    </div>
+    <svg class="kpi-spark" width="150" height="56" viewBox="0 0 150 56" preserveAspectRatio="none">
+      <defs><linearGradient id="sg4" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f5a524" stop-opacity=".25"/><stop offset="1" stop-color="#f5a524" stop-opacity="0"/>
+      </linearGradient></defs>
+      <path d="M0,44 C30,38 50,30 70,32 C95,34 115,22 150,16 L150,56 L0,56 Z" fill="url(#sg4)"/>
+      <path d="M0,44 C30,38 50,30 70,32 C95,34 115,22 150,16" fill="none" stroke="#f5a524" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+</div>
+
+<!-- charts row -->
+<div class="dash-grid g23 mt2">
+  <div class="card">
+    <div class="card-h">
+      <div>
+        <h3>Revenue vs expenses</h3>
+        <div class="sub">Trailing 12 months · {{ company.currency }}</div>
+      </div>
+      <div class="card-actions">
+        <div class="chart-legend">
+          <span><i class="legend-dot" style="background:#4f8cff"></i>Revenue</span>
+          <span><i class="legend-dot" style="background:#f5a524"></i>Expenses</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-b" style="padding-top:10px">
+      <svg viewBox="0 0 {{ rev_chart.w }} {{ rev_chart.h }}" style="width:100%;height:auto;display:block">
+        <defs>
+          <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#4f8cff" stop-opacity=".22"/><stop offset="1" stop-color="#4f8cff" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="expFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f5a524" stop-opacity=".16"/><stop offset="1" stop-color="#f5a524" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        {% for f in [0.0, 0.25, 0.5, 0.75, 1.0] %}
+        <line x1="0" y1="{{ 8 + 222*f }}" x2="{{ rev_chart.w }}" y2="{{ 8 + 222*f }}" stroke="#eef2f8" stroke-width="1"/>
+        {% endfor %}
+        {% for pth in rev_chart.paths %}
+        <path d="{{ pth.area }}" fill="url(#{{ 'expFill' if loop.index == 2 else 'revFill' }})"/>
+        <path d="{{ pth.path }}" fill="none" stroke="{{ pth.color }}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="{{ pth.pts[-1][0] }}" cy="{{ pth.pts[-1][1] }}" r="3.6" fill="#fff" stroke="{{ pth.color }}" stroke-width="2.4"/>
+        {% endfor %}
+      </svg>
+      <div class="axis-labels">
+        {% for s in d.series %}<span>{{ s.label }}</span>{% endfor %}
+      </div>
+      <div class="divider" style="margin:14px 0 8px"></div>
+      <div class="row between" style="margin-bottom:6px">
+        <span class="tiny faint" style="font-weight:700;letter-spacing:.08em">MONTHLY NET RESULT</span>
+        <span class="tiny muted">avg {{ sym }}{{ (d.pl_ytd.net / 11)|compact }}/mo</span>
+      </div>
+      <svg viewBox="0 0 {{ net_bars.w }} {{ net_bars.h }}" style="width:100%;height:auto;display:block">
+        <line x1="0" y1="{{ net_bars.zero_y }}" x2="{{ net_bars.w }}" y2="{{ net_bars.zero_y }}" stroke="#e2e8f0" stroke-width="1"/>
+        {% for b in net_bars.bars %}
+        <rect x="{{ b.x }}" y="{{ b.y }}" width="{{ b.w }}" height="{{ b.h }}" rx="3"
+              fill="{{ '#22c58b' if b.positive else '#ff5c7a' }}" opacity="{{ '0.85' }}"/>
+        {% endfor %}
+      </svg>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <div>
+        <h3>Expense mix</h3>
+        <div class="sub">Year to date by category</div>
+      </div>
+    </div>
+    <div class="card-b">
+      <div style="display:flex;justify-content:center">
+        <svg width="{{ mix_donut.size }}" height="{{ mix_donut.size }}" viewBox="0 0 {{ mix_donut.size }} {{ mix_donut.size }}">
+          <circle cx="{{ mix_donut.center }}" cy="{{ mix_donut.center }}" r="{{ mix_donut.r }}" fill="none" stroke="#f1f4f9" stroke-width="{{ mix_donut.thickness }}"/>
+          {% for s in mix_donut.segments %}
+          <circle cx="{{ mix_donut.center }}" cy="{{ mix_donut.center }}" r="{{ mix_donut.r }}" fill="none"
+                  stroke="{{ s.color }}" stroke-width="{{ mix_donut.thickness }}"
+                  stroke-dasharray="{{ s.dash }} {{ s.gap }}" stroke-dashoffset="{{ s.offset }}"
+                  transform="rotate(-90 {{ mix_donut.center }} {{ mix_donut.center }})" stroke-linecap="butt"/>
+          {% endfor %}
+          <text x="{{ mix_donut.center }}" y="{{ mix_donut.center - 4 }}" text-anchor="middle" font-size="11" fill="#94a3b8" font-weight="600" letter-spacing=".06em">TOTAL</text>
+          <text x="{{ mix_donut.center }}" y="{{ mix_donut.center + 16 }}" text-anchor="middle" font-size="19" fill="#0e1726" font-weight="700">{{ sym }}{{ d.mix_total|compact }}</text>
+        </svg>
+      </div>
+      <div class="mix-legend">
+        {% for m in d.mix %}
+        <div>
+          <div class="mix-item">
+            <span class="legend-dot" style="background:{{ m.color }}"></span>
+            <span class="nm">{{ m.name }}</span>
+            <span class="amt">{{ sym }}{{ m.value|compact }}</span>
+          </div>
+          <div class="mix-bar"><i style="width:{{ m.pct }}%;background:{{ m.color }}"></i></div>
+        </div>
+        {% endfor %}
+      </div>
+      <a class="btn ghost sm block mt2" href="/reports/pl">View full P&amp;L {{ icon('chevron', 14) }}</a>
+    </div>
+  </div>
+</div>
+
+<!-- aging + alerts -->
+<div class="dash-grid g23 mt2">
+  <div class="card">
+    <div class="card-h">
+      <div>
+        <h3>Receivables aging</h3>
+        <div class="sub">{{ sym }}{{ d.ar|money }} outstanding across customer accounts</div>
+      </div>
+      <div class="card-actions"><a class="btn soft sm" href="/reports/aging">Aging report</a></div>
+    </div>
+    <div class="card-b" style="padding-top:8px">
+      {% set buckets = [('Current', d.ar_buckets.current, '#22c58b'), ('1–30 days', d.ar_buckets.b1, '#4f8cff'), ('31–60 days', d.ar_buckets.b2, '#f5a524'), ('61–90 days', d.ar_buckets.b3, '#fb923c'), ('90+ days', d.ar_buckets.b4, '#ff5c7a')] %}
+      {% for label, val, col in buckets %}
+      <div class="aging-row">
+        <span class="lab"><i class="dot" style="color:{{ col }}"></i>{{ label }}</span>
+        <div class="bar"><i style="width:{{ (val / max_aging * 100)|round(1) }}%;background:{{ col }}"></i></div>
+        <span class="val">{{ sym }}{{ val|compact }}</span>
+      </div>
+      {% endfor %}
+      <div class="divider" style="margin:12px 0 10px"></div>
+      <div class="row between">
+        <div class="row" style="gap:8px">
+          <span class="chip chip-bad">{{ icon('alert', 12) }} {{ d.overdue.c }} overdue</span>
+          <span class="chip chip-good">{{ icon('check', 12) }} {{ d.current_ratio|num(2) }} current ratio</span>
+        </div>
+        <a class="small" style="font-weight:600" href="/invoices?status=overdue">Work the list {{ icon('arrow-right', 13) }}</a>
+      </div>
+      <div class="divider" style="margin:14px 0 10px"></div>
+      <div class="stat-strip" style="border-top:none">
+        <div><span>Payables</span><b>{{ sym }}{{ d.ap|compact }}</b></div>
+        <div><span title="{{ company.tax_name }} due">VAT due</span><b>{{ sym }}{{ d.vat.payable|compact }}</b></div>
+        <div><span>Gross margin</span><b>{{ d.pl_ytd.margin|num(1) }}%</b></div>
+        <div><span>Runway</span><b>{{ d.runway|num(1) }} mo</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <div>
+        <h3>Needs attention</h3>
+        <div class="sub">{{ d.alerts|length }} item{{ '' if d.alerts|length == 1 else 's' }} flagged from your ledger</div>
+      </div>
+      <div class="card-actions"><span class="chip chip-info">{{ icon('sparkle', 12) }} live</span></div>
+    </div>
+    <div class="card-b tight" style="padding:6px 16px 10px">
+      <div class="alert-list">
+        {% for a in d.alerts %}
+        <a class="alert-item" href="{{ a.link }}">
+          <span class="alert-ic {{ a.severity }}">{{ icon(a.icon, 15) }}</span>
+          <span style="min-width:0"><b>{{ a.title }}</b><span>{{ a.detail }}</span></span>
+        </a>
+        {% else %}
+        <div class="empty" style="padding:26px 8px">{{ icon('check', 26) }}<b>All clear</b>Nothing needs your attention right now.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- activity / customers / industry -->
+<div class="dash-grid g3 mt2">
+  <div class="card">
+    <div class="card-h">
+      <div><h3>Recent activity</h3><div class="sub">Latest ledger movements</div></div>
+      <div class="card-actions"><a class="small" style="font-weight:600" href="/journal">Journal {{ icon('chevron', 12) }}</a></div>
+    </div>
+    <div class="card-b tight" style="padding:4px 16px 10px">
+      {% for a in d.activity[:6] %}
+      <div class="activity">
+        <span class="act-ic {{ a.k }}">{{ icon('file' if a.k == 'invoice' else ('receipt' if a.k == 'bill' else ('card' if a.k == 'payment' else 'wallet')), 14) }}</span>
+        <div style="min-width:0">
+          <b>{{ a.ref }}</b>
+          <span>{{ a.party }} · {{ a.date|sdate }}</span>
+        </div>
+        <div class="act-amt">{{ sym }}{{ a.amt|compact }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <div><h3>Top customers</h3><div class="sub">By invoiced revenue · YTD</div></div>
+    </div>
+    <div class="card-b tight" style="padding:4px 16px 10px">
+      {% set top_total = d.top_customers|sum(attribute='v') or 1 %}
+      {% for c in d.top_customers %}
+      <div class="cust-row">
+        <div class="avatar sm" style="background:hsl({{ c.name|avatar_hue }} 70% 93%);color:hsl({{ c.name|avatar_hue }} 55% 32%)">{{ c.name|initials }}</div>
+        <div style="min-width:0">
+          <div class="nm">{{ c.name }}</div>
+          <div class="sub">{{ c.n }} invoice{{ '' if c.n == 1 else 's' }} · {{ (c.v / top_total * 100)|round }}% of top 5</div>
+        </div>
+        <div class="amt">{{ sym }}{{ c.v|compact }}</div>
+      </div>
+      {% else %}
+      <div class="empty" style="padding:22px">{{ icon('users', 24) }}<b>No customers yet</b></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <div><h3>{{ ind.label }} pulse</h3><div class="sub">Sector KPIs from live documents</div></div>
+      <div class="card-actions"><a class="small" style="font-weight:600" href="/setup">Switch {{ icon('chevron', 12) }}</a></div>
+    </div>
+    <div class="card-b">
+      <div class="hero-mini" style="border:none;box-shadow:none;padding:0 0 14px">
+        <span class="icon-circle blue-bg">{{ icon(ind.icon, 20) }}</span>
+        <div>
+          <div class="tiny faint" style="font-weight:700;letter-spacing:.07em;text-transform:uppercase">{{ ind.metric }} · 30 days</div>
+          <div style="font-size:26px;font-weight:750;letter-spacing:-.03em">{{ d.tracked_sold|num }}</div>
+        </div>
+        <span class="chip chip-good" style="margin-left:auto">{{ icon('up-right', 12) }} live</span>
+      </div>
+      <div class="stat-strip" style="border-top:1px solid var(--line-2);margin:0 -18px;width:calc(100% + 36px)">
+        <div style="padding-left:18px"><span>Invoices 30d</span><b>{{ d.billed }}</b></div>
+        <div><span>Staff</span><b>{{ d.employees }}</b></div>
+      </div>
+      <div class="mt2 small muted">Chart of accounts, billing items and cost categories are pre-built for {{ ind.label|lower }}. Activate another sector from Industry Setup.</div>
+      <a class="btn soft sm block mt2" href="/reports">
+        {{ icon('chart', 14) }} Open report library
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

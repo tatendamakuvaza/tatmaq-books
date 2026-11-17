@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+{% set avail = cn.total - cn.applied - cn.refunded %}
+<div class="toolbar">
+  <a class="btn ghost sm" href="/credit-notes">{{ icon('chevron', 14) }} All credit notes</a>
+  <span class="chip chip-info">{{ cn.status|capitalize }}</span>
+  <div style="margin-left:auto"><button class="btn soft sm" onclick="window.print()">{{ icon('print', 14) }} Print</button></div>
+</div>
+
+<div class="dash-grid g23" style="align-items:start">
+  <div class="card">
+    <div class="card-b" style="padding:28px 30px">
+      <div class="row between" style="align-items:flex-start;flex-wrap:wrap;gap:14px">
+        <div>
+          <div class="tiny faint" style="font-weight:700;letter-spacing:.08em">CREDIT NOTE</div>
+          <div style="font-size:21px;font-weight:750;margin-top:2px">{{ cn.number }}</div>
+          <div class="small muted">{{ cn.date|ddate }} · {{ cn.reason }}</div>
+        </div>
+        <div class="right">
+          <div class="tiny faint" style="font-weight:700;letter-spacing:.08em">CREDIT AVAILABLE</div>
+          <div style="font-size:24px;font-weight:750;color:{{ 'var(--good)' if avail > 0.01 else 'var(--muted)' }}">{{ sym }}{{ avail|money }}</div>
+          <div class="small muted">of {{ sym }}{{ cn.total|money }} total</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="row between" style="flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="tiny faint" style="font-weight:700;letter-spacing:.08em">CUSTOMER</div>
+          <div style="font-weight:700;margin-top:3px">{{ party.name if party else '—' }}</div>
+          <div class="small muted">{{ party.email if party else '' }} {{ party.phone if party else '' }}</div>
+        </div>
+        <div class="right small">
+          <div class="muted">Against invoice: <b style="color:var(--ink)">{{ inv_no or '—' }}</b></div>
+          <div class="muted">Applied: <b style="color:var(--ink)">{{ sym }}{{ cn.applied|money }}</b></div>
+          <div class="muted">Refunded: <b style="color:var(--ink)">{{ sym }}{{ cn.refunded|money }}</b></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <table class="tbl">
+        <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th><th>Restocked</th></tr></thead>
+        <tbody>
+        {% for l in lines %}
+          <tr><td style="font-weight:600">{{ l.description }}</td><td class="num">{{ l.qty|num(2) }}</td>
+            <td class="num">{{ sym }}{{ l.unit_price|money }}</td>
+            <td class="num strong">{{ sym }}{{ l.amount|money }}</td>
+            <td>{% if l.restock %}<span class="chip chip-good">Yes</span>{% else %}<span class="chip chip-muted">No</span>{% endif %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <div class="totals-box">
+        <div class="totals-row"><span>Subtotal</span><b>{{ sym }}{{ cn.subtotal|money }}</b></div>
+        <div class="totals-row"><span>{{ company.tax_name }} reversed</span><b>{{ sym }}{{ cn.tax|money }}</b></div>
+        <div class="totals-row grand"><span>Total credit</span><b>{{ sym }}{{ cn.total|money }}</b></div>
+      </div>
+      {% if cn.notes %}<div class="divider"></div><div class="small muted">{{ cn.notes }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="no-print">
+    {% if avail > 0.01 %}
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Apply to an invoice</h3><div class="sub">Dr Customer credits / Cr Receivables</div></div></div>
+      <div class="card-b">
+        <form method="post" action="/credit-notes/{{ cn.id }}/apply">
+          <div class="field"><label>Open invoice</label>
+            <select class="select" name="invoice_id" required>
+              <option value="">Choose invoice…</option>
+              {% for i in invoices %}
+              <option value="{{ i.id }}">{{ i.number }} · {{ i.party }} · {{ sym }}{{ (i.total - i.amount_paid)|money }} due</option>
+              {% endfor %}
+            </select></div>
+          <div class="form-grid fg2">
+            <div class="field"><label>Amount</label><input class="input" type="number" step="0.01" name="amount" value="{{ '%.2f'|format(avail) }}"></div>
+            <div class="field"><label>Date</label><input class="input" type="date" name="date" value="{{ now.isoformat() }}"></div>
+          </div>
+          <button class="btn block">{{ icon('check', 15) }} Apply credit</button>
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><h3>Refund the balance</h3><div class="sub">Dr Customer credits / Cr Bank</div></div></div>
+      <div class="card-b">
+        <form method="post" action="/credit-notes/{{ cn.id }}/refund">
+          <div class="field"><label>Refund amount</label><input class="input" type="number" step="0.01" name="amount" value="{{ '%.2f'|format(avail) }}"></div>
+          <div class="field"><label>Date</label><input class="input" type="date" name="date" value="{{ now.isoformat() }}"></div>
+          <button class="btn soft block">{{ icon('bank', 15) }} Record refund</button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="card"><div class="empty">{{ icon('check', 26) }}<b>Fully settled</b>This credit has been applied or refunded in full.</div></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

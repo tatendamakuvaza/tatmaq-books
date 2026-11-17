@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="report-head no-print">
+  <div class="report-title">
+    <a class="small" href="/reports" style="font-weight:600">← Report library</a>
+    <h2 class="mt1">{{ title }}</h2>
+    <div class="sub">{{ company.name }} · {{ company.currency }}
+      {% if rtype in ['pl', 'cf', 'vat', 'gl'] %}· {{ start|ddate }} to {{ end|ddate }}{% endif %}
+      {% if rtype in ['bs', 'tb'] %}· as at {{ as_of|ddate }}{% endif %}
+    </div>
+  </div>
+  <div class="range-form">
+    <form method="get" action="/reports/{{ rtype }}" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+      {% if rtype in ['pl', 'cf', 'vat', 'gl'] %}
+        <div class="field"><label>From</label><input class="input" type="date" name="start" value="{{ start }}"></div>
+        <div class="field"><label>To</label><input class="input" type="date" name="end" value="{{ end }}"></div>
+      {% endif %}
+      {% if rtype in ['bs', 'tb'] %}
+        <div class="field"><label>As at</label><input class="input" type="date" name="as_of" value="{{ as_of }}"></div>
+      {% endif %}
+      {% if rtype == 'gl' %}
+        <div class="field"><label>Account</label>
+          <select class="select" name="account_id" style="min-width:230px">
+            {% for a in accounts %}<option value="{{ a.id }}" {{ 'selected' if a.id == sel }}>{{ a.code }} · {{ a.name }}</option>{% endfor %}
+          </select></div>
+      {% endif %}
+      <button class="btn soft" type="submit">{{ icon('filter', 14) }} Apply</button>
+    </form>
+    <button class="btn soft" onclick="window.print()">{{ icon('print', 14) }} Print</button>
+  </div>
+</div>
+
+{# ================= P&L ================= #}
+{% if rtype == 'pl' %}
+<div class="card statement">
+  <div class="card-b" style="padding:28px 34px">
+    <div class="row between" style="align-items:flex-start">
+      <div><div style="font-size:18px;font-weight:750">{{ company.name }}</div>
+        <div class="small muted">Statement of profit or loss · {{ start|ddate }} – {{ end|ddate }}</div></div>
+      <div class="chip chip-info">{{ company.currency }}</div>
+    </div>
+    <div class="sec-label">Income</div>
+    {% for r in data.income %}<div class="st-line indent"><span class="l">{{ r.code }} · {{ r.name }}</span><span>{{ sym }}{{ r.value|money }}</span></div>{% endfor %}
+    <div class="st-line bold"><span>Total income</span><span>{{ sym }}{{ data.total_income|money }}</span></div>
+
+    <div class="sec-label">Cost of sales</div>
+    {% for r in data.cogs %}<div class="st-line indent"><span class="l">{{ r.code }} · {{ r.name }}</span><span>({{ sym }}{{ r.value|money }})</span></div>{% endfor %}
+    <div class="st-line bold"><span>Gross profit</span><span>{{ sym }}{{ data.gross|money }}</span></div>
+    <div class="st-line sub"><span>Gross margin</span><span>{{ data.margin|num(1) }}%</span></div>
+
+    <div class="sec-label">Operating expenses</div>
+    {% for r in data.opex %}<div class="st-line indent"><span class="l">{{ r.code }} · {{ r.name }}</span><span>{{ sym }}{{ r.value|money }}</span></div>{% endfor %}
+    <div class="st-line bold"><span>Total operating expenses</span><span>{{ sym }}{{ data.total_opex|money }}</span></div>
+
+    {% if data.other %}
+    <div class="sec-label">Other income</div>
+    {% for r in data.other %}<div class="st-line indent"><span class="l">{{ r.code }} · {{ r.name }}</span><span>{{ sym }}{{ r.value|money }}</span></div>{% endfor %}
+    {% endif %}
+
+    <div class="st-total"><span>Net profit for the period</span><span class="{{ 'pos' if data.net >= 0 else 'neg' }}">{{ sym }}{{ data.net|money }}</span></div>
+    <div class="row between small muted"><span>Net margin</span><span>{{ data.net_margin|num(1) }}%</span></div>
+  </div>
+</div>
+
+{# ================= Balance sheet ================= #}
+{% elif rtype == 'bs' %}
+<div class="card statement">
+  <div class="card-b" style="padding:28px 34px">
+    <div class="row between" style="align-items:flex-start">
+      <div><div style="font-size:18px;font-weight:750">{{ company.name }}</div>
+        <div class="small muted">Statement of financial position · as at {{ as_of|ddate }}</div></div>
+      {% if data.check|abs < 0.05 %}<span class="chip chip-good">{{ icon('check', 12) }} Balanced</span>
+      {% else %}<span class="chip chip-bad">{{ icon('alert', 12) }} Out by {{ sym }}{{ data.check|money }}</span>{% endif %}
+    </div>
+    <div class="sec-label">Assets</div>
+    {% for r in data.assets %}<div class="st-line indent"><span class="l">{{ r.code }} · {{ r.name }}</span><span>{{ sym }}{{ r.value|money }}</span></div>{% endfor %}
+    <div class="st-line bold"><span>Total assets</span><span>{{ sym }}{{ data.total_assets|money }}</span></div>
+
+    <div class="sec-label">Liabilities</div>
+    {% for r in data.liabilities %}<div class="st-line indent"><span class="l">{{ r.code }} · {{ r.name }}</span><span>{{ sym }}{{ r.value|money }}</span></div>{% endfor %}
+    <div class="st-line bold"><span>Total liabilities</span><span>{{ sym }}{{ data.total_liabilities|money }}</span></div>
+
+    <div class="sec-label">Equity</div>
+    {% for r in data.equity %}<div class="st-line indent"><span class="l">{{ r.code }} · {{ r.name }}</span><span>{{ sym }}{{ r.value|money }}</span></div>{% endfor %}
+    <div class="st-line indent"><span class="l">Current year profit</span><span>{{ sym }}{{ data.current_profit|money }}</span></div>
+    <div class="st-line bold"><span>Total equity</span><span>{{ sym }}{{ data.total_equity|money }}</span></div>
+
+    <div class="st-total"><span>Total liabilities &amp; equity</span><span>{{ sym }}{{ (data.total_liabilities + data.total_equity)|money }}</span></div>
+    <div class="row between small muted"><span>Check (assets − liabilities − equity)</span>
+      <span class="{{ 'pos' if data.check|abs < 0.05 else 'neg' }}">{{ sym }}{{ data.check|money }}</span></div>
+  </div>
+</div>
+
+{# ================= Trial balance ================= #}
+{% elif rtype == 'tb' %}
+<div class="card">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Code</th><th>Account</th><th>Type</th><th class="num">Movements Dr</th><th class="num">Movements Cr</th><th class="num">Balance Dr</th><th class="num">Balance Cr</th></tr></thead>
+      <tbody>
+      {% for r in data %}
+        <tr>
+          <td class="mono muted">{{ r.code }}</td>
+          <td class="strong">{{ r.name }}</td>
+          <td><span class="chip chip-muted">{{ r.type }}</span></td>
+          <td class="num muted">{{ sym }}{{ r.dr|money }}</td>
+          <td class="num muted">{{ sym }}{{ r.cr|money }}</td>
+          <td class="num">{{ sym }}{{ r.bal_dr|money if r.bal_dr > 0.004 else '—' }}</td>
+          <td class="num">{{ sym }}{{ r.bal_cr|money if r.bal_cr > 0.004 else '—' }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot class="tfoot"><tr>
+        <td colspan="3">Totals as at {{ as_of|ddate }}</td>
+        <td class="num">{{ sym }}{{ totals.dr|money }}</td>
+        <td class="num">{{ sym }}{{ totals.cr|money }}</td>
+        <td class="num">{{ sym }}{{ totals.bal_dr|money }}</td>
+        <td class="num">{{ sym }}{{ totals.bal_cr|money }}</td>
+      </tr></tfoot>
+    </table>
+  </div>
+</div>
+
+{# ================= Cash flow ================= #}
+{% elif rtype == 'cf' %}
+<div class="card statement">
+  <div class="card-b" style="padding:28px 34px">
+    <div style="font-size:18px;font-weight:750">{{ company.name }}</div>
+    <div class="small muted">Cash flow statement (indirect, simplified) · {{ start|ddate }} – {{ end|ddate }}</div>
+    <div class="sec-label">Operating activities</div>
+    <div class="st-line indent"><span class="l">Net profit</span><span>{{ sym }}{{ data.pl.net|money }}</span></div>
+    <div class="st-line indent"><span class="l">Add: depreciation (non-cash)</span><span>{{ sym }}{{ data.pl.depreciation|money }}</span></div>
+    <div class="st-line indent"><span class="l">Change in receivables</span><span>{{ sym }}{{ data.wc_ar|money }}</span></div>
+    <div class="st-line indent"><span class="l">Change in inventory</span><span>{{ sym }}{{ data.wc_inv|money }}</span></div>
+    <div class="st-line indent"><span class="l">Change in payables</span><span>{{ sym }}{{ data.wc_ap|money }}</span></div>
+    <div class="st-line indent"><span class="l">Change in tax balances</span><span>{{ sym }}{{ data.wc_tax|money }}</span></div>
+    <div class="st-line bold"><span>Net cash from operating</span><span>{{ sym }}{{ data.operating|money }}</span></div>
+    <div class="sec-label">Investing activities</div>
+    <div class="st-line indent"><span class="l">Purchase of property, plant &amp; equipment</span><span>{{ sym }}{{ data.investing|money }}</span></div>
+    <div class="sec-label">Financing activities</div>
+    <div class="st-line indent"><span class="l">Loans, capital and drawings</span><span>{{ sym }}{{ data.financing|money }}</span></div>
+    <div class="st-total"><span>Net movement in cash</span><span>{{ sym }}{{ data.net|money }}</span></div>
+    <div class="small muted">Ties to the change in the Cash and Bank accounts over the same period.</div>
+  </div>
+</div>
+
+{# ================= VAT ================= #}
+{% elif rtype == 'vat' %}
+<div class="dash-grid g3 mb2">
+  <div class="kpi"><div class="kpi-label">Output VAT (sales)</div><div class="kpi-value">{{ sym }}{{ data.output|compact }}</div></div>
+  <div class="kpi"><div class="kpi-label">Input VAT (purchases)</div><div class="kpi-value">{{ sym }}{{ data.input|compact }}</div></div>
+  <div class="kpi"><div class="kpi-label">VAT payable</div>
+    <div class="kpi-value" style="color:{{ 'var(--bad)' if data.payable > 0 else 'var(--good)' }}">{{ sym }}{{ data.payable|money }}</div>
+    <div class="kpi-foot"><span class="cap">ZIMRA return period · due by the 25th</span></div></div>
+</div>
+<div class="dash-grid g2">
+  <div class="card">
+    <div class="card-h"><div><h3>Sales schedule</h3><div class="sub">Taxable sales {{ sym }}{{ data.taxable_sales|compact }}</div></div></div>
+    <div class="tbl-wrap"><table class="tbl compact">
+      <thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th class="num">Net</th><th class="num">VAT</th></tr></thead>
+      <tbody>{% for r in data.sales %}
+        <tr><td class="muted small">{{ r.date|ddate }}</td><td class="strong">{{ r.number }}</td><td>{{ r.party }}</td>
+          <td class="num">{{ sym }}{{ r.subtotal|money }}</td><td class="num">{{ sym }}{{ r.tax|money }}</td></tr>
+      {% else %}<tr><td colspan="5"><div class="empty">No sales in period</div></td></tr>{% endfor %}</tbody>
+      <tfoot class="tfoot"><tr><td colspan="3">Total output</td><td class="num">{{ sym }}{{ data.taxable_sales|money }}</td><td class="num">{{ sym }}{{ data.output|money }}</td></tr></tfoot>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div><h3>Purchase schedule</h3><div class="sub">Taxable purchases {{ sym }}{{ data.taxable_purchases|compact }}</div></div></div>
+    <div class="tbl-wrap"><table class="tbl compact">
+      <thead><tr><th>Date</th><th>Bill</th><th>Supplier</th><th class="num">Net</th><th class="num">VAT</th></tr></thead>
+      <tbody>{% for r in data.purchases %}
+        <tr><td class="muted small">{{ r.date|ddate }}</td><td class="strong">{{ r.number }}</td><td>{{ r.party }}</td>
+          <td class="num">{{ sym }}{{ r.subtotal|money }}</td><td class="num">{{ sym }}{{ r.tax|money }}</td></tr>
+      {% else %}<tr><td colspan="5"><div class="empty">No purchases in period</div></td></tr>{% endfor %}</tbody>
+      <tfoot class="tfoot"><tr><td colspan="3">Total input</td><td class="num">{{ sym }}{{ data.taxable_purchases|money }}</td><td class="num">{{ sym }}{{ data.input|money }}</td></tr></tfoot>
+    </table></div>
+  </div>
+</div>
+
+{# ================= Aging ================= #}
+{% elif rtype == 'aging' %}
+{% set bt = [('current','Current'),('b1','1–30 days'),('b2','31–60 days'),('b3','61–90 days'),('b4','90+ days')] %}
+<div class="dash-grid g2 mb2">
+  <div class="card"><div class="card-b">
+    <div class="tiny faint" style="font-weight:700;letter-spacing:.06em">RECEIVABLES BY AGE</div>
+    <div class="dash-grid g4 mt1" style="gap:8px">
+      {% for k, lab in bt %}<div><div class="tiny muted">{{ lab }}</div>
+        <div style="font-weight:700;font-size:15px">{{ sym }}{{ ar_b[k]|compact }}</div></div>{% endfor %}
+    </div></div></div>
+  <div class="card"><div class="card-b">
+    <div class="tiny faint" style="font-weight:700;letter-spacing:.06em">PAYABLES BY AGE</div>
+    <div class="dash-grid g4 mt1" style="gap:8px">
+      {% for k, lab in bt %}<div><div class="tiny muted">{{ lab }}</div>
+        <div style="font-weight:700;font-size:15px">{{ sym }}{{ ap_b[k]|compact }}</div></div>{% endfor %}
+    </div></div></div>
+</div>
+<div class="card mb2">
+  <div class="card-h"><div><h3>Outstanding customer invoices</h3><div class="sub">{{ ar_d|length }} open documents · as at {{ now|ddate }}</div></div></div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Customer</th><th>Invoice date</th><th>Due</th><th class="num">Total</th><th class="num">Outstanding</th><th class="num">Days overdue</th><th>Bucket</th></tr></thead>
+    <tbody>{% for r in ar_d %}
+      <tr><td class="strong">{{ r.contact }}</td><td class="muted small">{{ r.date|ddate }}</td><td class="muted small">{{ r.due|ddate }}</td>
+        <td class="num">{{ sym }}{{ r.total|money }}</td><td class="num strong">{{ sym }}{{ r.outstanding|money }}</td>
+        <td class="num {{ 'neg' if r.days > 0 else 'muted' }}">{{ r.days if r.days > 0 else '—' }}</td>
+        <td><span class="chip {{ {'current':'chip-good','b1':'chip-info','b2':'chip-warn','b3':'chip-warn','b4':'chip-bad'}[r.bucket] }}">{{ dict(bt)[r.bucket] }}</span></td></tr>
+    {% else %}<tr><td colspan="7"><div class="empty">Nothing outstanding 🎉</div></td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+<div class="card">
+  <div class="card-h"><div><h3>Outstanding supplier bills</h3></div></div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Supplier</th><th>Bill date</th><th>Due</th><th class="num">Total</th><th class="num">Outstanding</th><th class="num">Days overdue</th><th>Bucket</th></tr></thead>
+    <tbody>{% for r in ap_d %}
+      <tr><td class="strong">{{ r.contact }}</td><td class="muted small">{{ r.date|ddate }}</td><td class="muted small">{{ r.due|ddate }}</td>
+        <td class="num">{{ sym }}{{ r.total|money }}</td><td class="num strong">{{ sym }}{{ r.outstanding|money }}</td>
+        <td class="num {{ 'neg' if r.days > 0 else 'muted' }}">{{ r.days if r.days > 0 else '—' }}</td>
+        <td><span class="chip {{ {'current':'chip-good','b1':'chip-info','b2':'chip-warn','b3':'chip-warn','b4':'chip-bad'}[r.bucket] }}">{{ dict(bt)[r.bucket] }}</span></td></tr>
+    {% else %}<tr><td colspan="7"><div class="empty">No supplier balances</div></td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+
+{# ================= General ledger ================= #}
+{% elif rtype == 'gl' %}
+<div class="card">
+  <div class="card-h"><div><h3>{{ data.account.code }} · {{ data.account.name }}</h3>
+    <div class="sub">{{ data.account.type|capitalize }} account · {{ start|ddate }} to {{ end|ddate }}</div></div>
+    <div class="card-actions"><span class="chip chip-muted">Opening {{ sym }}{{ data.opening|money }}</span></div></div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Date</th><th>Entry</th><th>Description</th><th>Source</th><th class="num">Debit</th><th class="num">Credit</th><th class="num">Running</th></tr></thead>
+    <tbody>
+    {% for l in data.lines %}
+      <tr><td class="muted small nowrap">{{ l.date|ddate }}</td><td class="mono muted">{{ l.number }}</td>
+        <td>{{ l.description }}</td><td><span class="chip chip-muted">{{ l.source }}</span></td>
+        <td class="num">{{ sym }}{{ l.debit|money if l.debit else '' }}</td>
+        <td class="num">{{ sym }}{{ l.credit|money if l.credit else '' }}</td>
+        <td class="num strong">{{ sym }}{{ l.running|money }}</td></tr>
+    {% else %}<tr><td colspan="7"><div class="empty">No movement in this period</div></td></tr>{% endfor %}
+    </tbody>
+    <tfoot class="tfoot"><tr><td colspan="4">Closing balance (natural)</td><td class="num">{{ sym }}{{ data.lines|sum(attribute='debit')|money }}</td>
+      <td class="num">{{ sym }}{{ data.lines|sum(attribute='credit')|money }}</td><td class="num">{{ sym }}{{ data.closing|money }}</td></tr></tfoot>
+  </table></div>
+</div>
+
+{# ================= Sales by item ================= #}
+{% elif rtype == 'sales-items' %}
+<div class="card">
+  <div class="card-h"><div><h3>Sales by item</h3><div class="sub">{{ start|ddate }} – {{ end|ddate }}</div></div></div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Item</th><th class="num">Quantity</th><th class="num">Revenue</th><th class="num">Cost</th><th class="num">Gross profit</th><th class="num">Margin</th></tr></thead>
+    <tbody>{% for r in data %}
+      <tr><td class="strong">{{ r.name }}<span class="sub">per {{ r.unit }}</span></td>
+        <td class="num">{{ r.qty|num(2) }}</td><td class="num">{{ sym }}{{ r.revenue|money }}</td>
+        <td class="num muted">{{ sym }}{{ r.cost|money }}</td>
+        <td class="num strong {{ 'pos' if r.revenue - r.cost >= 0 else 'neg' }}">{{ sym }}{{ (r.revenue - r.cost)|money }}</td>
+        <td class="num">{{ ((r.revenue - r.cost) / r.revenue * 100)|num(1) if r.revenue else '—' }}%</td></tr>
+    {% else %}<tr><td colspan="6"><div class="empty">No sales in period</div></td></tr>{% endfor %}</tbody>
+    <tfoot class="tfoot"><tr><td>Totals</td><td></td>
+      <td class="num">{{ sym }}{{ data|sum(attribute='revenue')|money }}</td>
+      <td class="num">{{ sym }}{{ data|sum(attribute='cost')|money }}</td>
+      <td class="num">{{ sym }}{{ (data|sum(attribute='revenue') - data|sum(attribute='cost'))|money }}</td><td></td></tr></tfoot>
+  </table></div>
+</div>
+
+{# ================= Stock ================= #}
+{% elif rtype == 'stock' %}
+<div class="card">
+  <div class="card-h"><div><h3>Inventory valuation at cost</h3><div class="sub">As at {{ now|ddate }}</div></div>
+    <div class="card-actions"><span class="chip chip-info">Total {{ sym }}{{ totals.value|money }}</span></div></div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Item</th><th>SKU</th><th>Unit</th><th class="num">Qty on hand</th><th class="num">Unit cost</th><th class="num">Value</th><th>Status</th></tr></thead>
+    <tbody>{% for r in data %}
+      <tr><td class="strong">{{ r.name }}</td><td class="mono muted">{{ r.sku }}</td><td class="muted">{{ r.unit }}</td>
+        <td class="num">{{ r.qty|num(2) }}</td><td class="num">{{ sym }}{{ r.cost|money }}</td>
+        <td class="num strong">{{ sym }}{{ (r.qty * r.cost)|money }}</td>
+        <td>{% if r.qty <= r.reorder %}<span class="chip chip-warn">Reorder</span>{% else %}<span class="chip chip-good">OK</span>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="7"><div class="empty">No tracked inventory items</div></td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+
+{# ================= Assets register ================= #}
+{% elif rtype == 'assets-register' %}
+<div class="card">
+  <div class="card-h"><div><h3>Fixed asset register</h3><div class="sub">Straight-line basis</div></div></div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Asset</th><th>Category</th><th>Acquired</th><th class="num">Cost</th><th class="num">Life</th><th class="num">Acc. depreciation</th><th class="num">NBV</th></tr></thead>
+    <tbody>{% for r in data %}
+      <tr><td class="strong">{{ r.name }}<span class="sub">{{ r.location }}</span></td><td class="muted">{{ r.category }}</td>
+        <td class="muted small">{{ r.purchase_date|ddate }}</td><td class="num">{{ sym }}{{ r.cost|money }}</td>
+        <td class="num muted">{{ r.life|num(0) }}</td><td class="num neg">{{ sym }}{{ r.accum_dep|money }}</td>
+        <td class="num strong">{{ sym }}{{ r.nbv|money }}</td></tr>
+    {% else %}<tr><td colspan="7"><div class="empty">No assets</div></td></tr>{% endfor %}</tbody>
+    <tfoot class="tfoot"><tr><td colspan="3">Totals</td><td class="num">{{ sym }}{{ data|sum(attribute='cost')|money }}</td><td></td>
+      <td class="num">{{ sym }}{{ data|sum(attribute='accum_dep')|money }}</td><td class="num">{{ sym }}{{ (data|sum(attribute='cost') - data|sum(attribute='accum_dep'))|money }}</td></tr></tfoot>
+  </table></div>
+</div>
+{% endif %}
+
+<div class="tiny faint mt2 no-print">Generated {{ now.strftime('%d %b %Y %H:%M') }} · Tatmaq Books · all figures in {{ company.currency }}</div>
+{% endblock %}

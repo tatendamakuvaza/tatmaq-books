@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.venv/
+venv/
+env/
+
+# Database & backups (seeded automatically on first run: python3 db.py)
+tatmaq.db
+*.db
+*.sqlite3
+backups/
+*.db.bak
+
+# Secrets & local config
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Logs & misc
+*.log
+.pytest_cache/
+.ruff_cache/

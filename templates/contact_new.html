@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+<div style="max-width:680px">
+  <div class="card">
+    <div class="card-h"><div><h3>New contact</h3><div class="sub">Customers get invoices, suppliers get bills</div></div></div>
+    <div class="card-b">
+      <form method="post" action="/contacts/new">
+        <div class="form-grid fg2">
+          <div class="field"><label>Contact type</label>
+            <select class="select" name="type">
+              <option value="customer" {{ 'selected' if tab == 'customer' }}>Customer</option>
+              <option value="vendor" {{ 'selected' if tab == 'vendor' }}>Supplier</option>
+            </select></div>
+          <div class="field"><label>Display name</label><input class="input" name="name" required placeholder="e.g. Mvurwi Gold Syndicate"></div>
+          <div class="field"><label>Company / legal name</label><input class="input" name="company" placeholder="Registered entity name"></div>
+          <div class="field"><label>Email</label><input class="input" type="email" name="email" placeholder="accounts@company.co.zw"></div>
+          <div class="field"><label>Phone</label><input class="input" name="phone" placeholder="+263 …"></div>
+          <div class="field"><label>Tax / VAT number</label><input class="input" name="tax_no" placeholder="BP number"></div>
+        </div>
+        <div class="field"><label>Address</label><input class="input" name="address" placeholder="Street, city"></div>
+        <div class="form-actions">
+          <button class="btn" type="submit">{{ icon('check', 15) }} Save contact</button>
+          <a class="btn soft" href="/contacts?tab={{ tab }}">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <span class="count-pill">{{ rows|length }} purchase orders</span>
+  <span class="chip chip-warn">{{ icon('clock', 12) }} Commitments — not yet a liability</span>
+  <div style="margin-left:auto"><a class="btn" href="/purchase-orders/new">{{ icon('plus', 15) }} New purchase order</a></div>
+</div>
+
+<div class="dash-grid g3 mb2">
+  <div class="hero-mini"><span class="icon-circle violet-bg">{{ icon('box', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">OPEN COMMITMENTS</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ sym }}{{ committed|money }}</div></div></div>
+  <div class="hero-mini"><span class="icon-circle green-bg">{{ icon('check', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">BILLED</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ rows|selectattr('status','equalto','billed')|list|length }}</div></div></div>
+  <div class="hero-mini"><span class="icon-circle amber-bg">{{ icon('truck', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">AWAITING RECEIPT</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ rows|rejectattr('status','in',['received','billed'])|list|length }}</div></div></div>
+</div>
+
+<div class="card">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Order</th><th>Supplier</th><th>Date</th><th>Delivery</th><th class="num">Total</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td><a class="link-strong" href="/purchase-orders/{{ r.id }}">{{ r.number }}</a></td>
+          <td><div class="row" style="gap:8px">
+            <div class="avatar sm" style="background:hsl({{ r.party|avatar_hue }} 70% 93%);color:hsl({{ r.party|avatar_hue }} 55% 32%)">{{ r.party|initials }}</div>
+            <span>{{ r.party }}</span></div></td>
+          <td class="muted">{{ r.date|ddate }}</td>
+          <td class="muted">{{ r.delivery_date|ddate if r.delivery_date else '—' }}</td>
+          <td class="num strong">{{ sym }}{{ r.total|money }}</td>
+          <td>
+            {% set cls = {'draft':'chip-muted','sent':'chip-info','partial':'chip-warn','received':'chip-good','billed':'chip-dark'} %}
+            <span class="chip {{ cls.get(r.status,'chip-muted') }}">{{ r.status|capitalize }}</span>
+          </td>
+          <td class="right"><a class="btn sm soft" href="/purchase-orders/{{ r.id }}">Open</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7"><div class="empty">{{ icon('box', 30) }}<b>No purchase orders yet</b>
+          Order stock or services before the invoice arrives — then receive and bill in two clicks.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="callout info mt2">{{ icon('sparkle', 15) }} <div><b>Why POs matter:</b> a purchase order is a commitment. It does not touch the ledger until you receive the goods and post the bill — which is exactly how you keep payables honest.</div></div>
+{% endblock %}

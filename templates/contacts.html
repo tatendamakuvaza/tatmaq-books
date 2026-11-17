@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <div class="tabs">
+    <a class="{{ 'active' if tab == 'customer' }}" href="/contacts?tab=customer">Customers</a>
+    <a class="{{ 'active' if tab == 'vendor' }}" href="/contacts?tab=vendor">Suppliers</a>
+  </div>
+  <span class="count-pill">{{ rows|length }} {{ 'customers' if tab == 'customer' else 'suppliers' }}</span>
+  <form class="search-inline" method="get" action="/contacts" style="margin-left:auto">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    {{ icon('search', 15) }}
+    <input class="input" name="q" placeholder="Search contacts">
+  </form>
+  <a class="btn" href="/contacts/new?type={{ tab }}">{{ icon('plus', 15) }} New {{ 'customer' if tab == 'customer' else 'supplier' }}</a>
+</div>
+
+<div class="dash-grid g2">
+{% for r in rows %}
+  <a class="card" href="/contacts/{{ r.id }}" style="display:flex;gap:14px;padding:16px 18px;align-items:center">
+    <div class="avatar lg" style="background:hsl({{ r.name|avatar_hue }} 70% 93%);color:hsl({{ r.name|avatar_hue }} 55% 32%);width:46px;height:46px">{{ r.name|initials }}</div>
+    <div style="min-width:0;flex:1">
+      <div style="font-weight:650;font-size:14px">{{ r.name }}</div>
+      <div class="small muted">{{ r.email or '—' }} · {{ r.phone or '' }}</div>
+      <div class="row mt1" style="gap:6px">
+        <span class="chip chip-muted">{{ r.cnt }} open doc{{ '' if r.cnt == 1 else 's' }}</span>
+        {% if r.tax_no %}<span class="chip chip-muted">{{ r.tax_no }}</span>{% endif %}
+      </div>
+    </div>
+    <div class="right">
+      <div class="tiny faint" style="font-weight:700;letter-spacing:.06em">{{ 'OWES YOU' if tab == 'customer' else 'YOU OWE' }}</div>
+      <div style="font-weight:750;font-size:17px;letter-spacing:-.02em;color:{{ 'var(--ink)' if r.bal <= 0.01 else ('var(--good)' if tab == 'customer' else 'var(--warn)') }}">
+        {{ sym }}{{ r.bal|money }}</div>
+    </div>
+  </a>
+{% else %}
+  <div class="card span2"><div class="empty">{{ icon('users', 32) }}<b>No {{ 'customers' if tab == 'customer' else 'suppliers' }} yet</b>Add your first contact to start transacting.</div></div>
+{% endfor %}
+</div>
+{% endblock %}

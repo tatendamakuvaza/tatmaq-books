@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="setup-banner mb2">
+  <span class="icon-circle" style="background:rgba(255,255,255,.1);color:#9fb8ff">{{ icon('chart', 22) }}</span>
+  <div style="flex:1">
+    <h3>Report library</h3>
+    <p>Ten statements generated live from the double-entry ledger — every report reconciles to the same trial balance. Date ranges are chosen per report.</p>
+  </div>
+  <a class="btn" href="/reports/pl" style="background:#fff;color:var(--brand-ink)">{{ icon('chart', 15) }} Open P&amp;L</a>
+</div>
+
+{% set reports = [
+  ('pl', 'Profit & Loss', 'Revenue, cost of sales, operating expenses and net profit for any period.', 'chart', 'blue-bg'),
+  ('bs', 'Balance Sheet', 'Assets, liabilities and equity at a chosen date, including current-year profit.', 'layers', 'violet-bg'),
+  ('tb', 'Trial Balance', 'Every account with debit and credit balances — proof the books balance.', 'book', 'gray-bg'),
+  ('cf', 'Cash Flow Statement', 'Operating, investing and financing flows for the period.', 'refresh', 'green-bg'),
+  ('vat', 'VAT Return (ZIMRA)', 'Output VAT less input VAT with the supporting invoice schedules.', 'percent', 'amber-bg'),
+  ('aging', 'Aged Receivables & Payables', 'Who owes you and whom you owe, bucketed by days overdue.', 'clock', 'amber-bg'),
+  ('gl', 'General Ledger', 'Drill into any account: opening balance, movements, running balance.', 'book', 'blue-bg'),
+  ('sales-items', 'Sales by Item', 'Quantity, revenue, cost and gross margin per product or service.', 'box', 'green-bg'),
+  ('stock', 'Inventory Valuation', 'Stock on hand at cost with reorder flags.', 'box', 'gray-bg'),
+  ('assets-register', 'Fixed Asset Register', 'Cost, accumulated depreciation and net book value per asset.', 'building', 'violet-bg')
+] %}
+<div class="dash-grid g3">
+  {% for key, name, desc, ic, cls in reports %}
+  <a class="card" href="/reports/{{ key }}" style="padding:18px;display:block">
+    <div class="row mb1" style="gap:11px">
+      <span class="icon-circle {{ cls }}">{{ icon(ic, 18) }}</span>
+      <div style="font-weight:700;font-size:14px">{{ name }}</div>
+      {{ icon('arrow-right', 15, 'faint') }}
+    </div>
+    <div class="small muted" style="min-height:38px">{{ desc }}</div>
+    <div class="mt1"><span class="chip chip-muted">Live ledger</span>
+      {% if key == 'vat' %}<span class="chip chip-info">Statutory</span>{% endif %}
+      {% if key in ['pl','bs','tb'] %}<span class="chip chip-good">Audit-ready</span>{% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

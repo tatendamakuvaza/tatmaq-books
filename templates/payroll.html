@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+{% set paye_m = namespace(v=0) %}{% set aids_m = namespace(v=0) %}{% set nssa_m = namespace(v=0) %}
+{% for e in employees %}{% set p = 0 %}{% endfor %}
+<div class="toolbar">
+  <span class="count-pill">{{ employees|length }} employees</span>
+  <span class="chip chip-info">ZIMRA USD bands · 3% AIDS levy · NSSA 4.5%</span>
+  <div style="margin-left:auto"><a class="btn" href="/payroll/new">{{ icon('plus', 15) }} Run payroll</a></div>
+</div>
+
+<div class="dash-grid g4 mb2">
+  <div class="kpi"><div class="kpi-label">{{ icon('users', 13) }} Monthly gross</div>
+    <div class="kpi-value">{{ sym }}{{ monthly|compact }}</div>
+    <div class="kpi-foot"><span class="cap">{{ employees|length }} active employees</span></div></div>
+  <div class="kpi"><div class="kpi-label">{{ icon('percent', 13) }} PAYE + AIDS levy</div>
+    <div class="kpi-value">{{ sym }}{{ (runs[0].paye if runs else 0)|compact }}</div>
+    <div class="kpi-foot"><span class="cap">last run · due by the 10th</span></div></div>
+  <div class="kpi"><div class="kpi-label">{{ icon('shield', 13) }} NSSA (employee + employer)</div>
+    <div class="kpi-value">{{ sym }}{{ (runs[0].nssa if runs else 0)|compact }}</div>
+    <div class="kpi-foot"><span class="cap">capped at $700 insurable</span></div></div>
+  <div class="kpi"><div class="kpi-label">{{ icon('wallet', 13) }} Net paid</div>
+    <div class="kpi-value">{{ sym }}{{ (runs[0].net if runs else 0)|compact }}</div>
+    <div class="kpi-foot"><span class="cap">last processed period</span></div></div>
+</div>
+
+<div class="dash-grid g23">
+  <div class="card">
+    <div class="card-h"><div><h3>Payroll register</h3><div class="sub">Employee master data and gross packages</div></div></div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Employee</th><th>Position</th><th>Department</th><th class="num">Gross / month</th><th>PAYE no.</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for e in employees %}
+          <tr>
+            <td><div class="row" style="gap:8px">
+              <div class="avatar sm" style="background:hsl({{ e.name|avatar_hue }} 70% 93%);color:hsl({{ e.name|avatar_hue }} 55% 32%)">{{ e.name|initials }}</div>
+              <span class="strong">{{ e.name }}</span></div></td>
+            <td class="muted">{{ e.position }}</td>
+            <td class="muted small">{{ e.department }}</td>
+            <td class="num strong">{{ sym }}{{ e.gross|money }}</td>
+            <td class="mono muted">{{ e.paye_no }}</td>
+            <td><span class="chip chip-good">{{ e.status }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><div><h3>Payroll runs</h3><div class="sub">Each run posts wages, PAYE, NSSA and net pay</div></div></div>
+    <div class="card-b tight" style="padding:4px 16px 12px">
+      {% for r in runs[:8] %}
+      <a class="activity" href="/payroll/{{ r.id }}">
+        <span class="act-ic payroll">{{ icon('wallet', 14) }}</span>
+        <div><b>Payroll {{ r.period }}</b><span>{{ r.date|ddate }} · gross {{ sym }}{{ r.gross|compact }}</span></div>
+        <span class="act-amt">{{ sym }}{{ r.net|compact }}<br><span class="tiny faint" style="font-weight:500">net</span></span>
+      </a>
+      {% else %}
+      <div class="empty" style="padding:22px">{{ icon('wallet', 24) }}<b>No runs yet</b>Process your first payroll.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title }} · Tatmaq Books</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232f6bff'/><text x='16' y='22' font-size='18' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'>T</text></svg>">
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+{% from "_icons.html" import icon %}
+{% set p = nav_path %}
+<input type="checkbox" id="nav-toggle" hidden>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="/">
+      <div class="brand-mark">T</div>
+      <div>
+        <div class="brand-name">Tatmaq</div>
+        <div class="brand-sub">BOOKS</div>
+      </div>
+    </a>
+
+    <nav>
+      <div class="nav-sec">Main</div>
+      <a class="nav-item {{ 'active' if p == '/' }}" href="/">{{ icon('grid',17) }} Dashboard</a>
+
+      <div class="nav-sec">Sales</div>
+      <a class="nav-item {{ 'active' if p.startswith('/invoices') }}" href="/invoices">
+        {{ icon('file',17) }} Invoices
+        {% if overdue_count %}<span class="nav-badge">{{ overdue_count }}</span>{% endif %}
+      </a>
+      <a class="nav-item {{ 'active' if p.startswith('/quotes') }}" href="/quotes">{{ icon('quote',17) }} Quotations</a>
+      <a class="nav-item {{ 'active' if p.startswith('/credit-notes') }}" href="/credit-notes">{{ icon('receipt',17) }} Credit Notes</a>
+      <a class="nav-item {{ 'active' if p.startswith('/contacts') and request.args.get('tab','customer') == 'customer' }}" href="/contacts?tab=customer">{{ icon('users',17) }} Customers</a>
+
+      {% if perms.full_view %}<div class="nav-sec">Purchases</div>
+      <a class="nav-item {{ 'active' if p.startswith('/purchase-orders') }}" href="/purchase-orders">{{ icon('box',17) }} Purchase Orders</a>
+      <a class="nav-item {{ 'active' if p.startswith('/bills') }}" href="/bills">
+        {{ icon('receipt',17) }} Bills
+        {% if bills_overdue_count %}<span class="nav-badge">{{ bills_overdue_count }}</span>{% endif %}
+      </a>
+      <a class="nav-item {{ 'active' if p.startswith('/contacts') and request.args.get('tab') == 'vendor' }}" href="/contacts?tab=vendor">{{ icon('users',17) }} Suppliers</a>
+      <a class="nav-item {{ 'active' if p.startswith('/vendor-credits') }}" href="/vendor-credits">{{ icon('receipt',17) }} Vendor Credits</a>
+      <a class="nav-item {{ 'active' if p.startswith('/payments') }}" href="/payments">{{ icon('card',17) }} Payments</a>
+      {% endif %}
+
+      <div class="nav-sec">Operations</div>
+      {% if perms.full_view %}
+      <a class="nav-item {{ 'active' if p.startswith('/banking') }}" href="/banking">{{ icon('bank',17) }} Banking</a>
+      {% endif %}
+      <a class="nav-item {{ 'active' if p.startswith('/inventory') }}" href="/inventory">{{ icon('box',17) }} Inventory &amp; Items</a>
+      {% if perms.full_view %}
+      <a class="nav-item {{ 'active' if p.startswith('/payroll') }}" href="/payroll">{{ icon('wallet',17) }} Payroll</a>
+      <a class="nav-item {{ 'active' if p.startswith('/assets') }}" href="/assets">{{ icon('building',17) }} Fixed Assets</a>
+      {% endif %}
+
+      <div class="nav-sec">Accounting</div>
+      <a class="nav-item {{ 'active' if p.startswith('/journal') }}" href="/journal">{{ icon('book',17) }} Journal</a>
+      <a class="nav-item {{ 'active' if p.startswith('/accounts') }}" href="/accounts">{{ icon('layers',17) }} Chart of Accounts</a>
+      <a class="nav-item {{ 'active' if p.startswith('/reports') }}" href="/reports">{{ icon('chart',17) }} Reports</a>
+
+      <div class="nav-sec">System</div>
+      {% if perms.system %}
+      <a class="nav-item {{ 'active' if p.startswith('/setup') }}" href="/setup">{{ icon('sparkle',17) }} Industry Setup</a>
+      {% endif %}
+      <a class="nav-item {{ 'active' if p.startswith('/settings') }}" href="/settings">{{ icon('settings',17) }} Settings</a>
+      <a class="nav-item" href="/logout">{{ icon('logout',17) }} Sign out</a>
+    </nav>
+
+    <div class="side-foot">
+      <a class="industry-card" href="/setup">
+        {% set ind = profiles[company.industry] %}
+        {{ icon(ind.icon, 20) }}
+        <div>
+          <b>{{ ind.label }}</b>
+          <span>Industry template active</span>
+        </div>
+      </a>
+      <a class="user-card" href="/settings">
+        <div class="avatar" style="background:hsl(221 90% 92%);color:hsl(221 65% 32%)">{{ ident.name|initials }}</div>
+        <div style="min-width:0">
+          <b>{{ ident.name }}</b>
+          <span>{{ perms.role_label }}{{ ' · demo' if perms.is_demo }}</span>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <label for="nav-toggle" class="hamburger">{{ icon('menu', 20) }}</label>
+      <div class="page-id">
+        <div class="crumb">Tatmaq Books / {{ company.name }}</div>
+        <h1>{{ title }}</h1>
+      </div>
+      <form class="searchbar" action="/invoices" method="get">
+        {{ icon('search', 16) }}
+        <input type="search" name="q" placeholder="Search invoices, quotations, customers…" value="{{ request.args.get('q','') }}">
+      </form>
+      <div class="top-actions">
+        <span class="chip-date">{{ icon('clock', 14) }} {{ now.strftime('%d %b %Y') }}</span>
+        {% if perms.write %}<a class="btn sm" href="/invoices/new">{{ icon('plus', 15) }} New invoice</a>{% endif %}
+        <a href="/invoices?status=overdue" title="Alerts" class="btn soft sm" style="padding:7px 9px">
+          {{ icon('bell', 16) }}
+        </a>
+        <span class="chip {{ 'chip-info' if perms.is_demo else 'chip-muted' }}" style="white-space:nowrap">{{ perms.role_label }}</span>
+        <a class="avatar lg" href="/settings" title="{{ ident.name }} · {{ perms.role_label }}"
+           style="background:hsl(160 60% 90%);color:hsl(160 55% 26%)">{{ ident.name|initials }}</a>
+      </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="toast-stack">
+        {% for cat, msg in messages %}
+        <div class="toast {{ cat }}">{{ icon('check' if cat == 'success' else 'alert', 16) }} {{ msg }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    {% if perms.is_demo %}
+    <div class="no-print" style="background:linear-gradient(90deg,#101d3a,#16294f);color:#c7d8ff;padding:9px 30px;font-size:12.4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <b style="color:#fff">Demo workspace</b>
+      <span>Seeded sample data, isolated from every other company — feel free to post, edit and reset.</span>
+      <a href="/register" style="margin-left:auto;color:#9fb8ff;font-weight:650">Create your own workspace →</a>
+    </div>
+    {% elif not perms.write %}
+    <div class="no-print" style="background:#fef3e2;color:#8a4a0b;padding:9px 30px;font-size:12.4px;display:flex;gap:10px;align-items:center">
+      {{ icon('eye', 14) }} <b>Read-only access</b> — you can view every report and document, but posting is disabled for the {{ perms.role_label }} role.
+    </div>
+    {% endif %}
+
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="foot">
+      <span><b style="color:var(--ink-2)">Tatmaq Books</b> v1.0 · Industry-adaptive accounting</span>
+      <span>Base currency {{ company.currency }} ({{ company.symbol }})</span>
+      <span>Fiscal year from {{ company.fiscal_start|ddate }}</span>
+      <span style="margin-left:auto">Double-entry ledger · ZIMRA-ready VAT &amp; PAYE</span>
+    </footer>
+  </div>
+</div>
+
+<button class="ai-fab" id="ai-fab" type="button">
+  <span class="spark">{{ icon('sparkle', 18) }}</span> Ask Tatmaq AI
+</button>
+
+<section class="ai-panel" id="ai-panel" hidden aria-label="Tatmaq AI assistant">
+  <div class="ai-head">
+    <div class="ai-ava">{{ icon('sparkle', 17) }}</div>
+    <div>
+      <b>Tatmaq AI</b>
+      <span>Your books, explained in plain language</span>
+    </div>
+    <button class="ai-close" id="ai-close" type="button">{{ icon('x', 16) }}</button>
+  </div>
+  <div class="ai-msgs" id="ai-msgs">
+    <div class="msg bot">Hi {{ ident.name.split()[0] }} 👋 I can read your live ledger. Ask me about <b>cash</b>, <b>profit</b>, <b>overdue invoices</b>, <b>VAT</b> or <b>expenses</b>.
+      <div class="ai-quick">
+        <button data-q="How is the business doing?">Business health</button>
+        <button data-q="What is my cash position and runway?">Cash &amp; runway</button>
+        <button data-q="Who owes me money?">Who owes me</button>
+        <button data-q="How much VAT do I owe?">VAT</button>
+      </div>
+    </div>
+  </div>
+  <form class="ai-form" id="ai-form">
+    <input id="ai-input" placeholder="Ask about your numbers…" autocomplete="off">
+    <button type="submit" aria-label="Send">{{ icon('send', 16) }}</button>
+  </form>
+</section>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

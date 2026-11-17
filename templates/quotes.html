@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <span class="count-pill">{{ rows|length }} quotations</span>
+  <div style="margin-left:auto"><a class="btn" href="/quotes/new">{{ icon('plus', 15) }} New quotation</a></div>
+</div>
+<div class="card">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Quote</th><th>Customer</th><th>Date</th><th>Expires</th><th class="num">Total</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        {% set st = status_of(r) %}
+        <tr>
+          <td class="strong">{{ r.number }}</td>
+          <td><div class="row" style="gap:8px">
+            <div class="avatar sm" style="background:hsl({{ r.party|avatar_hue }} 70% 93%);color:hsl({{ r.party|avatar_hue }} 55% 32%)">{{ r.party|initials }}</div>
+            <span>{{ r.party }}</span></div></td>
+          <td class="muted">{{ r.date|ddate }}</td>
+          <td class="muted">{{ r.expiry|ddate }}</td>
+          <td class="num strong">{{ sym }}{{ r.total|money }}</td>
+          <td><span class="chip {{ st.cls }}">{{ st.label }}</span></td>
+          <td class="right">
+            {% if r.status in ['sent', 'accepted', 'draft'] and not r.invoice_id %}
+            <form method="post" action="/quotes/{{ r.id }}/convert" style="display:inline">
+              <button class="btn sm" type="submit">{{ icon('file', 13) }} Convert to invoice</button>
+            </form>
+            {% else %}<span class="small muted">Invoiced</span>{% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7"><div class="empty">{{ icon('quote', 30) }}<b>No quotations yet</b>Win the work — quote first, invoice on acceptance.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="callout info mt2">{{ icon('sparkle', 15) }} <div><b>Sales discipline:</b> quotations expire. Converting an accepted quote creates the invoice with revenue, VAT and cost of sales already posted — no re-typing.</div></div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <span class="count-pill">latest {{ rows|length }} entries</span>
+  <span class="chip chip-info">{{ icon('book', 12) }} Full double-entry trail</span>
+  <div style="margin-left:auto"><a class="btn" href="/journal/new">{{ icon('plus', 15) }} New journal</a></div>
+</div>
+<div class="card">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Entry</th><th>Date</th><th>Memo</th><th>Source</th><th>Reference</th><th class="num">Amount</th><th></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td class="strong">{{ r.number }}</td>
+          <td class="muted nowrap">{{ r.date|ddate }}</td>
+          <td>{{ r.memo }}</td>
+          <td>
+            {% set cls = {'invoice':'chip-info','bill':'chip-warn','payment':'chip-good','payroll':'chip-dark','opening':'chip-muted','manual':'chip-muted','depreciation':'chip-muted','asset':'chip-dark','adjustment':'chip-warn'} %}
+            <span class="chip {{ cls.get(r.source, 'chip-muted') }}">{{ r.source }}</span>
+          </td>
+          <td class="mono muted">{{ r.reference or '—' }}</td>
+          <td class="num strong">{{ sym }}{{ r.total|money }}</td>
+          <td class="right"><a class="btn ghost sm" href="/journal/{{ r.id }}">{{ icon('eye', 14) }}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

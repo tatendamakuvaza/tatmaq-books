@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <div class="tabs">
+    <a class="{{ 'active' if kind == 'all' }}" href="/payments">All</a>
+    <a class="{{ 'active' if kind == 'received' }}" href="/payments?kind=received">Received</a>
+    <a class="{{ 'active' if kind == 'made' }}" href="/payments?kind=made">Made</a>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:10px">
+    <span class="chip chip-good">{{ icon('up-right', 12) }} In {{ sym }}{{ totals.received|compact }}</span>
+    <span class="chip chip-bad">{{ icon('dn-right', 12) }} Out {{ sym }}{{ totals.made|compact }}</span>
+  </div>
+</div>
+<div class="card">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Reference</th><th>Party</th><th>Applied to</th><th>Method</th><th>Date</th><th class="num">Amount</th><th>Type</th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td class="strong">{{ r.reference or '—' }}</td>
+          <td>{{ r.party }}</td>
+          <td>{% if r.inv_no %}<a href="/invoices/{{ r.invoice_id }}">{{ r.inv_no }}</a>{% elif r.bill_no %}<a href="/bills/{{ r.bill_id }}">{{ r.bill_no }}</a>{% else %}—{% endif %}</td>
+          <td class="muted">{{ r.method }}</td>
+          <td class="muted">{{ r.date|ddate }}</td>
+          <td class="num strong {{ 'pos' if r.kind == 'received' else '' }}">{{ '+' if r.kind == 'received' else '−' }} {{ sym }}{{ r.amount|money }}</td>
+          <td><span class="chip {{ 'chip-good' if r.kind == 'received' else 'chip-bad' }}">{{ 'Received' if r.kind == 'received' else 'Paid out' }}</span></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7"><div class="empty">{{ icon('card', 30) }}<b>No payments recorded</b>Record payments from an invoice or bill page.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

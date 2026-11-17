@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="dash-grid g3 mb2">
+  <div class="hero-mini"><span class="icon-circle blue-bg">{{ icon('building', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">ASSETS AT COST</div>
+      <div style="font-size:21px;font-weight:750">{{ sym }}{{ totals.cost|compact }}</div></div></div>
+  <div class="hero-mini"><span class="icon-circle amber-bg">{{ icon('chart', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">ACCUMULATED DEPRECIATION</div>
+      <div style="font-size:21px;font-weight:750">{{ sym }}{{ totals.dep|compact }}</div></div></div>
+  <div class="hero-mini"><span class="icon-circle green-bg">{{ icon('check', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">NET BOOK VALUE</div>
+      <div style="font-size:21px;font-weight:750">{{ sym }}{{ totals.nbv|compact }}</div></div></div>
+</div>
+
+<div class="dash-grid g23">
+  <div class="card">
+    <div class="card-h"><div><h3>Fixed asset register</h3><div class="sub">Straight-line depreciation, posted monthly</div></div></div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Asset</th><th>Category</th><th>Acquired</th><th class="num">Cost</th><th class="num">Life</th><th class="num">Acc. dep</th><th class="num">NBV</th><th class="num">Monthly</th></tr></thead>
+        <tbody>
+        {% for a in rows %}
+          <tr>
+            <td><div class="strong">{{ a.name }}</div><span class="sub">{{ a.location }}</span></td>
+            <td class="muted">{{ a.category }}</td>
+            <td class="muted small">{{ a.purchase_date|ddate }}</td>
+            <td class="num">{{ sym }}{{ a.cost|money }}</td>
+            <td class="num muted">{{ a.life|num(0) }} yr</td>
+            <td class="num neg">{{ sym }}{{ a.accum_dep|money }}</td>
+            <td class="num strong">{{ sym }}{{ a.nbv|money }}</td>
+            <td class="num muted">{{ sym }}{{ a.monthly|money }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="8"><div class="empty">{{ icon('building', 28) }}<b>No assets capitalised</b></div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <div class="card-h"><div><h3>Capitalise an asset</h3><div class="sub">Dr PPE / Cr Bank</div></div></div>
+      <div class="card-b">
+        <form method="post" action="/assets/new">
+          <div class="field"><label>Asset name</label><input class="input" name="name" required placeholder="e.g. Toyota Hilux GD6"></div>
+          <div class="form-grid fg2">
+            <div class="field"><label>Category</label><input class="input" name="category" placeholder="Vehicles"></div>
+            <div class="field"><label>Purchase date</label><input class="input" type="date" name="purchase_date" value="{{ today }}"></div>
+            <div class="field"><label>Cost ({{ company.currency }})</label><input class="input" type="number" step="0.01" name="cost" required></div>
+            <div class="field"><label>Useful life (years)</label><input class="input" type="number" step="1" name="life" value="5"></div>
+          </div>
+          <div class="field"><label>Location</label><input class="input" name="location" placeholder="Harare"></div>
+          <button class="btn block" type="submit">{{ icon('plus', 15) }} Capitalise asset</button>
+        </form>
+      </div>
+    </div>
+    <div class="callout info mt2">{{ icon('sparkle', 15) }} <div><b>Depreciation:</b> monthly charge = cost ÷ life ÷ 12, posted to Depreciation expense and accumulated depreciation. Your P&amp;L and Balance Sheet update automatically.</div></div>
+  </div>
+</div>
+{% endblock %}

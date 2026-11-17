@@ -1,0 +1,73 @@
+{% extends "_public_head.html" %}
+{% block title %}Create your workspace · Tatmaq Books{% endblock %}
+{% block body %}
+{% include "_auth_css.html" %}
+
+<div class="auth">
+{% include "_auth_motif.html" %}
+
+  <div class="auth-stack wide">
+
+    <div class="auth-card wide">
+
+      <div class="auth-mast">
+        <span class="auth-logo">T</span>
+        <div class="auth-name">Tatmaq Books</div>
+        <div class="auth-label">New workspace</div>
+      </div>
+      <div class="auth-hr"></div>
+      <p class="auth-lede">A clean ledger, from day one.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+      {% endwith %}
+
+      <form method="post" action="/register">
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:0 13px">
+          <div class="field"><label for="r-name">Your name</label>
+            <input class="input" id="r-name" name="name" value="{{ form.get('name','') }}" placeholder="Tatenda Maq" required></div>
+          <div class="field"><label for="r-email">Work email</label>
+            <input class="input" id="r-email" type="email" name="email" value="{{ form.get('email','') }}" placeholder="you@company.co.zw" required></div>
+        </div>
+
+        <div class="pair">
+          <div class="field"><label for="r-co">Company name</label>
+            <input class="input" id="r-co" name="company" value="{{ form.get('company','') }}" placeholder="e.g. Mvurwi Mining (Pvt) Ltd" required></div>
+
+          <div class="field"><label for="r-ind">Industry template</label>
+            <select class="select" id="r-ind" name="industry">
+              {% for key, p in profiles.items() %}
+              <option value="{{ key }}" {{ 'selected' if form.get('industry') == key }}>{{ p.label }} — {{ p.metric|lower }}</option>
+              {% endfor %}
+            </select>
+            <span class="tiny muted">Sets your chart of accounts, billing items and dashboard KPI.</span>
+          </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:0 13px">
+          <div class="field"><label for="r-pass">Password</label>
+            <input class="input" id="r-pass" type="password" name="password" placeholder="min 8 characters" required></div>
+          <div class="field"><label for="r-conf">Confirm</label>
+            <input class="input" id="r-conf" type="password" name="confirm" placeholder="repeat" required></div>
+        </div>
+
+        <button class="btn block" type="submit" style="margin-top:4px">Create workspace</button>
+      </form>
+
+      <div class="auth-links">
+        <a href="/login">Already have a workspace? Sign in</a><span>·</span><a href="/demo">Explore the demo</a>
+      </div>
+    </div>
+
+    <div class="auth-foot">Opening balances, your chart of accounts and sample contacts — ready to rename.</div>
+
+  </div>
+</div>
+
+<script>
+  document.querySelector('form').addEventListener('submit', function (e) {
+    var p = document.getElementById('r-pass').value, c = document.getElementById('r-conf').value;
+    if (p !== c) { e.preventDefault(); alert('Passwords do not match.'); }
+  });
+</script>
+{% endblock %}

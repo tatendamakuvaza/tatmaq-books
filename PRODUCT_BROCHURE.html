@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tatmaq Books — Product Brochure</title>
+<style>
+  :root{
+    --navy:#0a1120; --navy2:#101d3a; --ink:#0e1726; --ink2:#334155; --muted:#64748b;
+    --line:#e4eaf3; --bg:#f2f5fa; --brand:#2f6bff; --brand2:#5b8cff; --good:#0e9f6e;
+    --warn:#b45309; --bad:#e11d48;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .page{max-width:1000px;margin:0 auto;background:#fff;box-shadow:0 30px 80px -40px rgba(13,23,48,.4)}
+  section{padding:44px 56px}
+  h1,h2,h3,h4{margin:0;letter-spacing:-.025em;line-height:1.2}
+  h2{font-size:25px;margin-bottom:6px}
+  h3{font-size:16px}
+  p{margin:0 0 12px}
+  .eyebrow{font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--brand);font-weight:800}
+  .lead{font-size:15.5px;color:var(--ink2);max-width:720px}
+  .muted{color:var(--muted)} .small{font-size:12.5px} .tiny{font-size:11.5px}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+  .card{border:1px solid var(--line);border-radius:14px;padding:18px;background:#fff}
+  .card.dark{background:linear-gradient(160deg,#101d3a,#0a1120);color:#dbe4f5;border-color:#1c2b4d}
+  .card.dark h3,.card.dark b{color:#fff}
+  .chip{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:#eef2f8;color:#475569}
+  .chip.good{background:#e7f7f0;color:#067a55}.chip.warn{background:#fef3e2;color:#9a4a06}
+  .chip.bad{background:#fdecef;color:#be123c}.chip.info{background:#e8f1fd;color:#0b5cb5}
+  .num{font-variant-numeric:tabular-nums}
+  ul{margin:0;padding-left:18px} li{margin:4px 0}
+  .divider{height:1px;background:var(--line);margin:22px 0}
+
+  /* hero */
+  .hero{background:radial-gradient(120% 140% at 85% 0%,#1b3a8f 0%,#0e1c3e 45%,#080f1e 100%);
+        color:#fff;padding:54px 56px 46px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;inset:0;opacity:.35;pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+    background-size:38px 38px;mask-image:radial-gradient(70% 100% at 95% 0,#000 10%,transparent 72%)}
+  .brandrow{display:flex;align-items:center;gap:13px;position:relative;z-index:1}
+  .logo{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,#2f6bff,#1c4ed8);display:grid;place-items:center;
+        font-weight:800;font-size:23px;box-shadow:0 10px 26px -10px rgba(47,107,255,.8),inset 0 1px 0 rgba(255,255,255,.35)}
+  .brandname{font-size:19px;font-weight:750;letter-spacing:-.01em}
+  .brandsub{font-size:9.5px;letter-spacing:.34em;color:#7d92b8;font-weight:800;margin-top:2px}
+  .hero h1{font-size:38px;margin:30px 0 12px;max-width:720px;position:relative;z-index:1}
+  .hero h1 span{background:linear-gradient(90deg,#8fb0ff,#c7d8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:#a9bcdc;font-size:15px;max-width:640px;position:relative;z-index:1}
+  .hero-stats{display:flex;gap:30px;margin-top:30px;flex-wrap:wrap;position:relative;z-index:1}
+  .hero-stats div{border-left:2px solid rgba(143,176,255,.4);padding-left:14px}
+  .hero-stats b{display:block;font-size:25px;letter-spacing:-.03em}
+  .hero-stats span{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#8fa6cc;font-weight:700}
+
+  /* matrix */
+  table{width:100%;border-collapse:collapse;font-size:12.8px}
+  th{text-align:left;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+     font-weight:800;padding:9px 10px;border-bottom:1px solid var(--line);background:#f8fafc}
+  td{padding:9px 10px;border-bottom:1px solid #eef2f8;vertical-align:top}
+  td.c{text-align:center;white-space:nowrap}
+  .yes{color:var(--good);font-weight:800}.part{color:var(--warn);font-weight:800}.no{color:#c3cfe2;font-weight:800}
+
+  .ind{display:flex;gap:12px;align-items:flex-start}
+  .ind-ic{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#eef4ff,#dce8ff);color:#1c4ed8;
+          display:grid;place-items:center;flex:none;font-size:17px;font-weight:800}
+  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .kpi-strip div{padding:14px 16px;border-right:1px solid var(--line)}
+  .kpi-strip div:last-child{border-right:none}
+  .kpi-strip b{display:block;font-size:19px;letter-spacing:-.02em}
+  .kpi-strip span{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+
+  .tier{border:1px solid var(--line);border-radius:14px;padding:20px;position:relative}
+  .tier.featured{border-color:var(--brand);box-shadow:0 0 0 3px rgba(47,107,255,.12)}
+  .tier .price{font-size:30px;font-weight:800;letter-spacing:-.03em;margin:8px 0 2px}
+  .tier .price small{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0}
+  footer{background:var(--navy);color:#8fa6cc;padding:26px 56px;font-size:11.5px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  @media print{body{background:#fff}.page{box-shadow:none}section{padding:28px 34px}.hero{padding:34px}
+    .hero h1{font-size:30px} h2{font-size:20px} .g4{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:820px){section,.hero{padding:30px 22px}.g2,.g3,.g4{grid-template-columns:1fr}
+    .hero h1{font-size:27px}.kpi-strip{grid-template-columns:1fr 1fr}footer{padding:22px}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ HERO ============ -->
+  <div class="hero">
+    <div class="brandrow">
+      <div class="logo">T</div>
+      <div>
+        <div class="brandname">Tatmaq Books</div>
+        <div class="brandsub">INDUSTRY-ADAPTIVE ACCOUNTING</div>
+      </div>
+      <div style="margin-left:auto;text-align:right" class="tiny">
+        <div style="color:#8fa6cc">Product brochure · v1.0</div>
+        <div style="color:#8fa6cc">Harare · November 2026</div>
+      </div>
+    </div>
+    <h1>Zoho-class accounting.<br><span>Built for how each industry actually earns.</span></h1>
+    <p>A complete double-entry accounting system with an executive dashboard, statutory
+       Zimbabwean payroll and tax, and eight industry templates — mining, education, transport,
+       agriculture, manufacturing, banking, insurance and healthcare.</p>
+    <div class="hero-stats">
+      <div><b>8</b><span>Industry templates</span></div>
+      <div><b>10</b><span>Financial reports</span></div>
+      <div><b>35</b><span>Working screens</span></div>
+      <div><b>$5</b><span>Monthly hosting</span></div>
+    </div>
+  </div>
+
+  <!-- ============ POSITIONING ============ -->
+  <section>
+    <div class="eyebrow">The opportunity</div>
+    <h2>Generic accounting software makes every industry buy the same chart of accounts</h2>
+    <p class="lead">A mine does not sell "services". A school does not invoice "goods". An insurer carries unearned
+      premium reserves; a hospital bills medical aid schemes. Off-the-shelf systems force accountants to bend
+      their industry into a generic template — then rebuild it every year.</p>
+    <div class="divider"></div>
+    <div class="grid g3">
+      <div class="card">
+        <div class="chip bad">The problem</div>
+        <h3 style="margin:10px 0 6px">One-size-fits-all ledgers</h3>
+        <p class="small muted" style="margin:0">Global SaaS ships a US/India template. Local SMEs pay for features
+          they don't use and re-key industry detail into spreadsheets.</p>
+      </div>
+      <div class="card">
+        <div class="chip info">The shift</div>
+        <h3 style="margin:10px 0 6px">Activate your sector</h3>
+        <p class="small muted" style="margin:0">Tatmaq Books installs a sector-specific chart of accounts,
+          billing items, cost categories, asset register and KPI in one click.</p>
+      </div>
+      <div class="card">
+        <div class="chip good">The result</div>
+        <h3 style="margin:10px 0 6px">Books that speak your trade</h3>
+        <p class="small muted" style="margin:0">Ore stockpiles and royalties. Tuition and boarding. Trips and tolls.
+          Premiums and claims. Reported in language your board understands.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section style="background:#f8fafc;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+    <div class="eyebrow">The centrepiece</div>
+    <h2>An executive dashboard, not an accountant's worksheet</h2>
+    <p class="lead">The first screen answers the four questions an owner asks every morning: how much did we earn,
+       how much did we keep, how much cash do we have, and who owes us money.</p>
+    <div class="kpi-strip" style="margin:20px 0 16px;background:#fff">
+      <div><span>Revenue YTD</span><b>$645,691</b><div class="tiny" style="color:var(--good)">▲ 6.8% vs last month</div></div>
+      <div><span>Net profit YTD</span><b>$121,104</b><div class="tiny muted">18.8% net margin</div></div>
+      <div><span>Cash position</span><b>$433,700</b><div class="tiny muted">26.3 months runway</div></div>
+      <div><span>Receivables</span><b>$189,246</b><div class="tiny" style="color:var(--bad)">29 overdue · $127,770</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3 style="margin-bottom:8px">What the dashboard shows</h3>
+        <ul class="small" style="color:var(--ink2)">
+          <li><b>Health score</b> — a 0–100 gauge blending profitability, liquidity, collections and growth</li>
+          <li><b>Revenue vs expenses</b> — 12-month trend with monthly net-profit bars</li>
+          <li><b>Expense mix</b> — donut of where money actually goes, ranked</li>
+          <li><b>Receivables aging</b> — current to 90+ days with one-click chase list</li>
+          <li><b>Needs attention</b> — live alerts for overdue debt, stock reorder, unreconciled bank items and VAT due</li>
+          <li><b>Top customers</b> with concentration risk, and <b>industry pulse</b> KPI</li>
+        </ul>
+      </div>
+      <div class="card dark">
+        <div class="chip" style="background:rgba(255,255,255,.12);color:#c7d8ff">Ask Tatmaq AI</div>
+        <h3 style="margin:10px 0 6px">Plain-language answers from the live ledger</h3>
+        <p class="small" style="color:#a9bcdc">An assistant panel reads the same journal your reports do, and answers:
+          <i>“What is my cash runway?” · “Who owes me money?” · “How much VAT do I owe?” · “What should I focus on?”</i></p>
+        <p class="small" style="color:#8fa6cc;margin:0">No exports, no pivot tables — answers in seconds, with the numbers
+          and the next action.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INDUSTRIES ============ -->
+  <section>
+    <div class="eyebrow">Tailoring</div>
+    <h2>Eight industry templates, each with its own ledger logic</h2>
+    <p class="lead">Every template installs income streams, cost categories, control accounts, demo customers,
+      suppliers, assets and a sector KPI — then keeps the same rigorous double-entry core underneath.</p>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><div class="ind"><div class="ind-ic">⛏</div><div>
+        <h3>Mining &amp; Resources</h3>
+        <p class="small muted" style="margin:4px 0 0">Ore stockpiles, spare-parts inventory, rehabilitation provision,
+          royalties &amp; mineral fees, explosives, contract haulage. KPI: tonnes sold.</p></div></div></div>
+      <div class="card"><div class="ind"><div class="ind-ic">🎓</div><div>
+        <h3>Education &amp; Training</h3>
+        <p class="small muted" style="margin:4px 0 0">Tuition receivable, deferred tuition income, boarding &amp; catering,
+          bursaries, teaching materials. KPI: students billed.</p></div></div></div>
+      <div class="card"><div class="ind"><div class="ind-ic">🚚</div><div>
+        <h3>Transport &amp; Logistics</h3>
+        <p class="small muted" style="margin:4px 0 0">Freight and passenger revenue, tyres &amp; spares, tolls &amp; permits,
+          driver allowances, fleet insurance. KPI: trips completed.</p></div></div></div>
+      <div class="card"><div class="ind"><div class="ind-ic">🌿</div><div>
+        <h3>Agriculture &amp; Agro-processing</h3>
+        <p class="small muted" style="margin:4px 0 0">Biological assets &amp; livestock, crop inputs, irrigation costs,
+          seasonal labour, produce sales. KPI: tonnes harvested.</p></div></div></div>
+      <div class="card"><div class="ind"><div class="ind-ic">🏭</div><div>
+        <h3>Manufacturing</h3>
+        <p class="small muted" style="margin:4px 0 0">Raw materials, work in progress, finished goods, factory overheads,
+          packaging, machine maintenance. KPI: units produced.</p></div></div></div>
+      <div class="card"><div class="ind"><div class="ind-ic">🏦</div><div>
+        <h3>Banking &amp; Microfinance</h3>
+        <p class="small muted" style="margin:4px 0 0">Loans &amp; advances, customer deposits, interest income, fees &amp;
+          commission, loan loss provisions. KPI: facilities billed.</p></div></div></div>
+      <div class="card"><div class="ind"><div class="ind-ic">🛡</div><div>
+        <h3>Insurance</h3>
+        <p class="small muted" style="margin:4px 0 0">Gross premiums written, unearned premium reserve, claims payable,
+          reinsurance ceded, acquisition costs. KPI: policies written.</p></div></div></div>
+      <div class="card"><div class="ind"><div class="ind-ic">❤</div><div>
+        <h3>Hospitals &amp; Healthcare</h3>
+        <p class="small muted" style="margin:4px 0 0">Patient &amp; medical-aid receivable, patient service revenue,
+          pharmacy sales, medical supplies, locum staff. KPI: patient visits.</p></div></div></div>
+    </div>
+  </section>
+
+  <!-- ============ MATRIX ============ -->
+  <section style="background:#f8fafc;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+    <div class="eyebrow">Feature comparison</div>
+    <h2>Zoho Books parity — and what is deliberately different</h2>
+    <p class="lead small">Honest status of the reference build. ✓ shipped and wired to the ledger · ◐ partial ·
+       ○ on the roadmap. Nothing below is a mock-up: invoices, bills, payments, payroll, assets and journals all post
+       real double-entry transactions.</p>
+    <table style="margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden">
+      <thead><tr><th style="width:40%">Capability</th><th class="c">Tatmaq Books</th><th class="c">Zoho Books equivalent</th></tr></thead>
+      <tbody>
+        <tr><td>Sales invoices with automatic VAT and cost of sales</td><td class="c yes">✓</td><td class="c small muted">Invoices</td></tr>
+        <tr><td>Quotations / estimates converted to invoices</td><td class="c yes">✓</td><td class="c small muted">Estimates</td></tr>
+        <tr><td>Credit notes, refunds and sales returns</td><td class="c yes">✓</td><td class="c small muted">Credit notes</td></tr>
+        <tr><td>Supplier bills, input VAT, part payments</td><td class="c yes">✓</td><td class="c small muted">Bills</td></tr>
+        <tr><td>Payments received &amp; made, multi-bank</td><td class="c yes">✓</td><td class="c small muted">Payments</td></tr>
+        <tr><td>Bank accounts &amp; reconciliation</td><td class="c yes">✓</td><td class="c small muted">Banking</td></tr>
+        <tr><td>Live bank feeds (open banking)</td><td class="c part">◐ simulated</td><td class="c small muted">Feeds</td></tr>
+        <tr><td>Items, stock levels, reorder alerts, valuation</td><td class="c yes">✓</td><td class="c small muted">Inventory</td></tr>
+        <tr><td>Warehouses, serial/batch, price lists</td><td class="c no">○</td><td class="c small muted">Advanced inventory</td></tr>
+        <tr><td>Chart of accounts &amp; manual journals (Dr = Cr enforced)</td><td class="c yes">✓</td><td class="c small muted">Manual journals</td></tr>
+        <tr><td>Fixed asset register with monthly depreciation</td><td class="c yes">✓</td><td class="c small muted">Fixed assets</td></tr>
+        <tr><td>Payroll with ZIMRA PAYE, AIDS levy, NSSA</td><td class="c yes">✓</td><td class="c part small muted">Payroll (add-on)</td></tr>
+        <tr><td>Statutory VAT return schedule</td><td class="c yes">✓</td><td class="c yes muted">Sales tax / VAT</td></tr>
+        <tr><td>Reports: P&amp;L, balance sheet, trial balance, cash flow, aging, GL, sales by item, stock, asset register, VAT</td><td class="c yes">10 core</td><td class="c small muted">50+ reports</td></tr>
+        <tr><td>Multi-currency</td><td class="c part">◐ table</td><td class="c yes muted">✓</td></tr>
+        <tr><td>Authentication, roles &amp; multi-tenancy</td><td class="c yes">✓ 5 roles</td><td class="c yes muted">✓</td></tr>
+        <tr><td>Audit log of every change</td><td class="c part">◐ user + timestamp</td><td class="c yes muted">✓</td></tr>
+        <tr><td>Recurring invoices, payment reminders, customer portal</td><td class="c no">○</td><td class="c yes muted">✓</td></tr>
+        <tr><td>Purchase orders, credit notes, vendor credits</td><td class="c no">○</td><td class="c yes muted">✓</td></tr>
+        <tr><td>Projects &amp; timesheets, budgets, workflows</td><td class="c no">○</td><td class="c yes muted">✓</td></tr>
+        <tr><td><b>Industry templates that reshape the ledger</b></td><td class="c yes">✓ 8 sectors</td><td class="c no">—</td></tr>
+        <tr><td><b>Executive dashboard with health score &amp; live alerts</b></td><td class="c yes">✓</td><td class="c part small muted">Basic</td></tr>
+        <tr><td><b>In-app AI analyst that reads the ledger</b></td><td class="c yes">✓</td><td class="c no">—</td></tr>
+      </tbody>
+    </table>
+    <p class="small muted" style="margin-top:12px">The roadmap closes the parity gaps in this order: authentication &amp; roles →
+      credit notes and purchase orders → recurring invoices and reminders → customer portal → bank feed integrations.</p>
+  </section>
+
+  <!-- ============ COMMERCIALS ============ -->
+  <section>
+    <div class="eyebrow">Commercial model</div>
+    <h2>Sell it as a service, price it per industry</h2>
+    <p class="lead">One instance runs comfortably on a $5/month server. The same server can host a dozen small
+      companies as subdomains — so every client after the first is almost pure margin.</p>
+    <div class="grid g3" style="margin-top:18px">
+      <div class="tier">
+        <div class="chip">Starter</div>
+        <div class="price">$15<small> /month</small></div>
+        <p class="small muted">Solo traders and new companies</p>
+        <ul class="small" style="color:var(--ink2)">
+          <li>1 user · 1 industry template</li>
+          <li>Invoicing, quotations, bills, banking</li>
+          <li>Core reports (P&amp;L, BS, TB, aging)</li>
+          <li>VAT return schedule</li>
+        </ul>
+      </div>
+      <div class="tier featured">
+        <div class="chip info">Standard — most popular</div>
+        <div class="price">$29<small> /month</small></div>
+        <p class="small muted">Growing SMEs (5–40 staff)</p>
+        <ul class="small" style="color:var(--ink2)">
+          <li>Up to 3 users · all reports</li>
+          <li>Inventory, fixed assets, payroll</li>
+          <li>Executive dashboard &amp; alerts</li>
+          <li>Email support · monthly backup</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <div class="chip">Industry Pro</div>
+        <div class="price">$49<small> /month</small></div>
+        <p class="small muted">Multi-branch or regulated operators</p>
+        <ul class="small" style="color:var(--ink2)">
+          <li>Unlimited users &amp; templates</li>
+          <li>AI analyst + custom KPIs</li>
+          <li>Onboarding &amp; chart-of-accounts design</li>
+          <li>Priority support · daily backups</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid g3" style="margin-top:14px">
+      <div class="card"><div class="tiny muted" style="font-weight:800;letter-spacing:.08em">SETUP FEE</div>
+        <b style="font-size:18px">$150 one-off</b><p class="small muted" style="margin:4px 0 0">
+        Data migration, opening balances, staff training — the highest-value, easiest upsell.</p></div>
+      <div class="card"><div class="tiny muted" style="font-weight:800;letter-spacing:.08em">UNIT ECONOMICS</div>
+        <b style="font-size:18px">≈ $1.60 / client</b><p class="small muted" style="margin:4px 0 0">
+        Hosting (Hetzner CX22, ~$4.70/mo) split across 3+ tenants. Gross margin above 90%.</p></div>
+      <div class="card"><div class="tiny muted" style="font-weight:800;letter-spacing:.08em">GROWTH MOTION</div>
+        <b style="font-size:18px">Industry by industry</b><p class="small muted" style="margin:4px 0 0">
+        Win one school, one clinic, one haulage firm. Referrals stay inside the sector.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ HOSTING ============ -->
+  <section style="background:#f8fafc;border-top:1px solid var(--line)">
+    <div class="eyebrow">Infrastructure</div>
+    <h2>Running production on a $10 budget</h2>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card">
+        <h3 style="margin-bottom:8px">Month 1–2 · Railway Hobby — $5/month</h3>
+        <ul class="small" style="color:var(--ink2)">
+          <li>Frontend and backend in one Flask service (no separate JS build)</li>
+          <li>Deploy from GitHub in one click; free <code>*.up.railway.app</code> domain</li>
+          <li>$5 fee includes $5 of resource usage — a small accounting app fits comfortably</li>
+          <li>Attach a volume for <code>tatmaq.db</code> so data survives restarts</li>
+          <li>$10 covers two full months while the first clients are onboarded</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:8px">Month 3+ · Hetzner CX22 — €4.35/month</h3>
+        <ul class="small" style="color:var(--ink2)">
+          <li>2 vCPU, 4 GB RAM, 40 GB NVMe — far more than needed for 10–30 SMEs</li>
+          <li>One gunicorn service + nginx + nightly SQLite backup to object storage</li>
+          <li>Host multiple clients as <code>client.tatmaqbooks.co.zw</code> subdomains</li>
+          <li>Funded entirely by the first paying client at $29/month</li>
+        </ul>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:14px">Full deployment steps, cost table and payment-collection notes
+      (EcoCash / Paynow) are in <b>HOSTING_AND_MONETISATION.md</b>.</p>
+  </section>
+
+  <footer>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="logo" style="width:30px;height:30px;font-size:15px;border-radius:9px">T</div>
+      <b style="color:#fff">Tatmaq Books</b>
+    </div>
+    <span>Industry-adaptive accounting · double-entry core · ZIMRA-ready</span>
+    <span style="margin-left:auto">Demo figures from the seeded Mining workspace · November 2026</span>
+  </footer>
+</div>
+</body>
+</html>

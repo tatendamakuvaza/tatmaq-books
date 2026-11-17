@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+{% set st = status_of(b) %}
+{% set bal = b.total - b.amount_paid %}
+<div class="toolbar no-print">
+  <a class="btn ghost sm" href="/bills">{{ icon('chevron', 14) }} All bills</a>
+  <span class="chip {{ st.cls }}">{{ st.label }}</span>
+  <div style="margin-left:auto"><button class="btn soft sm" onclick="window.print()">{{ icon('print', 14) }} Print</button></div>
+</div>
+<div class="dash-grid g32">
+  <div class="card">
+    <div class="card-b" style="padding:30px 32px">
+      <div class="row between" style="align-items:flex-start">
+        <div>
+          <div class="tiny faint" style="font-weight:700;letter-spacing:.08em;text-transform:uppercase">Supplier bill</div>
+          <div style="font-weight:750;font-size:18px;margin-top:4px">{{ b.party }}</div>
+          <div class="small muted">{{ b.address or '' }}</div>
+          <div class="small muted">{{ b.email or '' }} {{ b.phone or '' }}</div>
+        </div>
+        <div class="right">
+          <div style="font-size:22px;font-weight:750;letter-spacing:-.03em">{{ b.number }}</div>
+          <div class="small muted">Bill date {{ b.date|ddate }}</div>
+          <div class="small muted">Due {{ b.due_date|ddate }}</div>
+          <div class="small" style="margin-top:6px;font-weight:700;color:{{ 'var(--good)' if bal <= 0.01 else 'var(--bad)' }}">
+            {{ sym }}{{ bal|money }} outstanding</div>
+        </div>
+      </div>
+      <div class="divider" style="margin:20px 0"></div>
+      <table class="tbl">
+        <thead><tr><th>Description</th><th>Account</th><th class="num">Qty</th><th class="num">Unit cost</th><th class="num">Amount</th></tr></thead>
+        <tbody>
+        {% for l in lines %}
+          <tr><td style="font-weight:600">{{ l.description }}</td><td class="muted">{{ l.account }}</td>
+            <td class="num">{{ l.qty|num(2) }}</td><td class="num">{{ sym }}{{ l.unit_cost|money }}</td>
+            <td class="num strong">{{ sym }}{{ l.amount|money }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <div class="totals-box">
+        <div class="totals-row"><span>Subtotal</span><b>{{ sym }}{{ b.subtotal|money }}</b></div>
+        <div class="totals-row"><span>Input {{ company.tax_name }}</span><b>{{ sym }}{{ b.tax|money }}</b></div>
+        <div class="totals-row grand"><span>Total</span><b>{{ sym }}{{ b.total|money }}</b></div>
+        {% if b.amount_paid > 0.01 %}<div class="totals-row" style="color:var(--good)"><span>Paid</span><b>− {{ sym }}{{ b.amount_paid|money }}</b></div>
+        <div class="totals-row" style="font-weight:700"><span>Balance</span><b>{{ sym }}{{ bal|money }}</b></div>{% endif %}
+      </div>
+      {% if b.notes %}<div class="divider"></div><div class="small muted">{{ b.notes }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="no-print">
+    {% if bal > 0.01 %}
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Pay this bill</h3><div class="sub">Posts Dr Payables / Cr Bank</div></div></div>
+      <div class="card-b">
+        <form method="post" action="/bills/{{ b.id }}/pay">
+          <div class="field"><label>Amount ({{ company.currency }})</label>
+            <input class="input" type="number" step="0.01" name="amount" value="{{ '%.2f'|format(bal) }}"></div>
+          <div class="form-grid fg2">
+            <div class="field"><label>Date</label><input class="input" type="date" name="date" value="{{ now.isoformat() }}"></div>
+            <div class="field"><label>Method</label>
+              <select class="select" name="method"><option>Bank transfer</option><option>Cheque</option><option>Cash</option><option>Mobile money</option></select></div>
+          </div>
+          <div class="field"><label>Pay from</label>
+            <select class="select" name="bank_account_id">{% for bk in banks %}<option value="{{ bk.id }}">{{ bk.name }}</option>{% endfor %}</select></div>
+          <button class="btn good block">{{ icon('check', 15) }} Record payment</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+    <div class="card mb2">
+      <div class="card-h"><div><h3>Vendor credits</h3><div class="sub">{{ credits|length }} against this bill</div></div></div>
+      <div class="card-b tight" style="padding:6px 16px 12px">
+        {% for vc in credits %}
+        <div class="activity">
+          <span class="act-ic bill">{{ icon('receipt', 13) }}</span>
+          <div><b>{{ vc.number }}</b><span>{{ vc.reason }} · {{ vc.date|ddate }}</span></div>
+          <span class="act-amt">{{ sym }}{{ vc.total|money }}</span>
+        </div>
+        {% else %}
+        <div class="empty" style="padding:14px">{{ icon('receipt', 18) }}<b style="font-size:13px">No credits</b></div>
+        {% endfor %}
+        {% if perms.write %}
+        <a class="btn soft sm block mt1" href="/vendor-credits/new?bill_id={{ b.id }}">{{ icon('plus', 13) }} Record vendor credit</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div><h3>Payments against this bill</h3></div></div>
+      <div class="card-b tight" style="padding:6px 16px 12px">
+        {% for p2 in pays %}
+        <div class="activity">
+          <span class="act-ic payment">{{ icon('card', 14) }}</span>
+          <div><b>{{ sym }}{{ p2.amount|money }}</b><span>{{ p2.method }} · {{ p2.date|ddate }}</span></div>
+        </div>
+        {% else %}<div class="empty" style="padding:20px">{{ icon('clock', 22) }}<b>Nothing paid yet</b></div>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

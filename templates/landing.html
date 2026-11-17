@@ -1,0 +1,136 @@
+{% extends "_public_head.html" %}
+{% block title %}Tatmaq Books — accounting built for your industry{% endblock %}
+{% block body %}
+
+<!-- nav -->
+<div style="position:sticky;top:0;z-index:40;background:rgba(255,255,255,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)">
+  <div class="wrap" style="display:flex;align-items:center;gap:14px;padding:12px 24px">
+    <a class="brandrow" href="/welcome"><div class="logo" style="width:34px;height:34px;font-size:17px;border-radius:10px">T</div>
+      <div><div class="brandname" style="font-size:15px">Tatmaq</div><div class="brandsub" style="font-size:8px">BOOKS</div></div></a>
+    <div style="margin-left:auto;display:flex;gap:9px">
+      <a class="btn soft" href="/login">Sign in</a>
+      <a class="btn" href="/register">Create workspace</a>
+    </div>
+  </div>
+</div>
+
+<!-- hero -->
+<div style="background:radial-gradient(120% 130% at 85% 0%,#1b3a8f 0%,#0e1c3e 46%,#080f1e 100%);color:#fff;padding:62px 0 54px;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;opacity:.3;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(70% 100% at 95% 0,#000 10%,transparent 70%)"></div>
+  <div class="wrap" style="position:relative;z-index:1">
+    <span class="chip" style="background:rgba(255,255,255,.1);color:#bcd2ff">ZIMRA-ready · double-entry · 8 industry templates</span>
+    <h1 style="font-size:42px;max-width:760px;margin-top:16px">Accounting software that already speaks <span style="color:#8fb0ff">your industry</span>.</h1>
+    <p style="color:#a9bcdc;font-size:16px;max-width:600px;margin-top:14px">Generic platforms give every business the same
+      chart of accounts. Tatmaq Books installs the ledger your sector actually uses — then shows the numbers that matter
+      on one executive dashboard.</p>
+    <div style="display:flex;gap:10px;margin-top:24px;flex-wrap:wrap">
+      <a class="btn" href="/demo" style="padding:13px 22px">Open the live demo →</a>
+      <a class="btn ghost" href="/register" style="padding:13px 22px">Create your workspace</a>
+    </div>
+    <div class="tiny" style="color:#7d92b8;margin-top:14px">No card required · demo runs on isolated sample data · {{ seats }} workspace{{ '' if seats == 1 else 's' }} already provisioned</div>
+  </div>
+</div>
+
+<!-- industries -->
+<div class="wrap" style="padding:44px 24px 6px">
+  <div class="tiny" style="letter-spacing:.26em;color:var(--brand);font-weight:800">TAILORED LEDGERS</div>
+  <h2 style="font-size:26px;margin-top:6px">Eight templates, each with its own control accounts</h2>
+  <p class="muted" style="max-width:700px">Switch templates any time — the system rebuilds the chart of accounts, billing items,
+    cost categories, asset register and sector KPI for that industry.</p>
+  <div class="grid" style="grid-template-columns:repeat(4,1fr);margin-top:20px">
+    {% for key, p in profiles.items() %}
+    <div class="card" style="padding:16px">
+      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#eef4ff,#dce8ff);color:var(--brand-ink);display:grid;place-items:center;font-weight:800;margin-bottom:10px">{{ loop.index }}</div>
+      <b style="font-size:13.5px">{{ p.label }}</b>
+      <p class="tiny muted" style="margin:6px 0 10px;min-height:48px">{{ p.tagline }}</p>
+      <span class="chip">{{ p.metric }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- features -->
+<div class="wrap" style="padding:44px 24px 10px">
+  <div class="grid responsive-2" style="grid-template-columns:1fr 1fr;gap:18px">
+    <div class="card" style="padding:24px">
+      <span class="chip good">Executive first</span>
+      <h2 style="font-size:21px;margin:10px 0 8px">A dashboard an owner reads in 30 seconds</h2>
+      <ul class="small" style="color:var(--ink2);padding-left:18px;line-height:2">
+        <li>Financial health score blending profit, liquidity and collections</li>
+        <li>Revenue vs expenses trend and monthly net-profit bars</li>
+        <li>Receivables aging with a one-click chase list</li>
+        <li>Live alerts: overdue debt, low stock, unreconciled bank, VAT due</li>
+      </ul>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <span class="chip">Health gauge</span><span class="chip">Aging</span><span class="chip">Industry KPI</span>
+      </div>
+    </div>
+    <div class="card" style="padding:24px">
+      <span class="chip">Ask Tatmaq AI</span>
+      <h2 style="font-size:21px;margin:10px 0 8px">Plain answers, straight from the ledger</h2>
+      <p class="small muted">“What is my cash runway?” · “Who owes me money?” · “How much VAT do I owe?” ·
+        “What should I focus on?”</p>
+      <div style="background:#f7f9fd;border:1px solid var(--line);border-radius:12px;padding:13px;margin-top:12px">
+        <div class="tiny muted" style="font-weight:700">CASH POSITION</div>
+        <div style="font-size:20px;font-weight:750;letter-spacing:-.02em;margin-top:2px">$433,700</div>
+        <div class="tiny" style="color:var(--good);font-weight:700;margin-top:2px">26.3 months of runway at current spend</div>
+      </div>
+      <p class="tiny muted" style="margin-top:10px">Answers use the same journal lines as your reports, so they can never disagree.</p>
+    </div>
+  </div>
+</div>
+
+<!-- module strip -->
+<div class="wrap" style="padding:26px 24px 10px">
+  <div class="grid" style="grid-template-columns:repeat(4,1fr)">
+    {% for title, items in [
+      ('Sell', ['Invoices with automatic VAT', 'Quotations → invoice', 'Credit notes & refunds', 'Customer statements']),
+      ('Buy & stock', ['Supplier bills', 'Purchase orders → bill', 'Vendor credits', 'Inventory & reorder alerts']),
+      ('Run', ['Payroll: PAYE, AIDS, NSSA', 'Fixed assets & depreciation', 'Multi-bank reconciliation', 'Journal & chart of accounts']),
+      ('Report', ['P&L · Balance sheet', 'Trial balance · Cash flow', 'VAT return · Aging', 'General ledger · by item'])
+    ] %}
+    <div class="card" style="padding:16px">
+      <div class="tiny" style="font-weight:800;letter-spacing:.1em;color:var(--muted)">{{ title|upper }}</div>
+      <div class="small" style="margin-top:8px;color:var(--ink2);line-height:1.95">
+        {% for i in items %}<div>· {{ i }}</div>{% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- pricing -->
+<div class="wrap" style="padding:34px 24px 20px">
+  <div class="tiny" style="letter-spacing:.26em;color:var(--brand);font-weight:800">PRICING</div>
+  <h2 style="font-size:26px;margin-top:6px">Priced for SMEs, not enterprises</h2>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:18px">
+    <div class="card">
+      <span class="chip">Starter</span>
+      <div style="font-size:30px;font-weight:800;letter-spacing:-.03em;margin-top:8px">$15<span class="small muted" style="font-weight:600">/mo</span></div>
+      <div class="small muted">Solo traders &amp; new companies</div>
+      <div class="small" style="margin-top:10px;color:var(--ink2);line-height:2">1 user · 1 template<br>Invoicing &amp; bills<br>Core reports · VAT schedule</div>
+    </div>
+    <div class="card" style="border-color:var(--brand);box-shadow:0 0 0 3px rgba(47,107,255,.12)">
+      <span class="chip good">Standard — most popular</span>
+      <div style="font-size:30px;font-weight:800;letter-spacing:-.03em;margin-top:8px">$29<span class="small muted" style="font-weight:600">/mo</span></div>
+      <div class="small muted">Growing SMEs (5–40 staff)</div>
+      <div class="small" style="margin-top:10px;color:var(--ink2);line-height:2">Up to 3 users · all reports<br>Inventory · assets · payroll<br>Dashboard &amp; live alerts</div>
+    </div>
+    <div class="card">
+      <span class="chip">Industry Pro</span>
+      <div style="font-size:30px;font-weight:800;letter-spacing:-.03em;margin-top:8px">$49<span class="small muted" style="font-weight:600">/mo</span></div>
+      <div class="small muted">Multi-branch &amp; regulated</div>
+      <div class="small" style="margin-top:10px;color:var(--ink2);line-height:2">Unlimited users &amp; templates<br>AI analyst · custom KPIs<br>Onboarding &amp; daily backups</div>
+    </div>
+  </div>
+</div>
+
+<div style="background:var(--navy);color:#8fa6cc;padding:30px 24px;margin-top:26px">
+  <div class="wrap" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding:0">
+    <div class="brandrow"><div class="logo" style="width:28px;height:28px;font-size:14px;border-radius:9px">T</div>
+      <b style="color:#fff;font-size:13.5px">Tatmaq Books</b></div>
+    <span class="tiny">Industry-adaptive accounting · double-entry core · ZIMRA-ready</span>
+    <span class="tiny" style="margin-left:auto"><a href="/login" style="color:#8fb0ff">Sign in</a> · <a href="/demo" style="color:#8fb0ff">Demo</a></span>
+  </div>
+</div>
+{% endblock %}

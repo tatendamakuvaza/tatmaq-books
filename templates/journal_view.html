@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <a class="btn ghost sm" href="/journal">{{ icon('chevron', 14) }} All journals</a>
+  <span class="chip chip-muted">{{ e.source }}</span>
+  <div style="margin-left:auto"><a class="btn soft sm" href="/reports/gl">Open general ledger</a></div>
+</div>
+<div class="dash-grid g32">
+  <div class="card">
+    <div class="card-h"><div><h3>{{ e.number }}</h3><div class="sub">{{ e.memo }} · {{ e.date|ddate }}</div></div>
+      <div class="card-actions"><span class="chip chip-muted">{{ e.reference or 'no reference' }}</span></div></div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Account</th><th>Description</th><th class="num">Debit</th><th class="num">Credit</th></tr></thead>
+        <tbody>
+        {% set dr = namespace(v=0) %}{% set cr = namespace(v=0) %}
+        {% for l in lines %}
+          {% set dr.v = dr.v + l.debit %}{% set cr.v = cr.v + l.credit %}
+          <tr>
+            <td><span class="mono muted">{{ l.code }}</span> <span class="strong">{{ l.account }}</span></td>
+            <td class="muted">{{ l.description }}</td>
+            <td class="num">{{ sym }}{{ l.debit|money if l.debit else '' }}</td>
+            <td class="num">{{ sym }}{{ l.credit|money if l.credit else '' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot class="tfoot"><tr><td colspan="2">Totals</td>
+          <td class="num">{{ sym }}{{ dr.v|money }}</td><td class="num">{{ sym }}{{ cr.v|money }}</td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <div class="card-h"><div><h3>Balance check</h3></div></div>
+      <div class="card-b">
+        <div class="row between mb1"><span class="muted">Debits</span><b>{{ sym }}{{ lines|sum(attribute='debit')|money }}</b></div>
+        <div class="row between mb1"><span class="muted">Credits</span><b>{{ sym }}{{ lines|sum(attribute='credit')|money }}</b></div>
+        <div class="divider" style="margin:10px 0"></div>
+        {% if (lines|sum(attribute='debit') - lines|sum(attribute='credit'))|abs < 0.01 %}
+        <span class="chip chip-good">{{ icon('check', 12) }} Balanced entry</span>
+        {% else %}
+        <span class="chip chip-bad">{{ icon('alert', 12) }} Out of balance</span>
+        {% endif %}
+        <p class="small muted mt2" style="margin-bottom:0">Source: {{ e.source }} · created {{ e.created_at|ddate }}. Journals cannot be deleted in the demo — production locks posted entries and uses reversing journals for corrections.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

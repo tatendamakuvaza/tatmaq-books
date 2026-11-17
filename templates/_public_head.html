@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Tatmaq Books{% endblock %}</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232f6bff'/><text x='16' y='22' font-size='18' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'>T</text></svg>">
+<style>
+  :root{
+    --navy:#0a1120;--navy2:#101d3a;--ink:#0e1726;--ink2:#334155;--muted:#64748b;--faint:#94a3b8;
+    --line:#e4eaf3;--bg:#f2f5fa;--brand:#2f6bff;--brand-ink:#1c4ed8;--good:#0e9f6e;--bad:#e11d48;--warn:#b45309;
+    --grad:linear-gradient(135deg,#2f6bff,#1c4ed8);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:var(--brand-ink);text-decoration:none}
+  h1,h2,h3{margin:0;letter-spacing:-.025em;line-height:1.18}
+  p{margin:0 0 12px}
+  .brandrow{display:flex;align-items:center;gap:11px}
+  .logo{width:40px;height:40px;border-radius:12px;background:var(--grad);display:grid;place-items:center;
+        color:#fff;font-weight:800;font-size:20px;box-shadow:0 8px 22px -8px rgba(47,107,255,.75),inset 0 1px 0 rgba(255,255,255,.35)}
+  .brandname{font-weight:750;font-size:16.5px;letter-spacing:-.01em;line-height:1.1}
+  .brandsub{font-size:9px;letter-spacing:.32em;color:var(--faint);font-weight:800;margin-top:3px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:11px;
+       border:none;background:var(--grad);color:#fff;font-weight:650;font-size:13.6px;cursor:pointer;
+       box-shadow:0 1px 2px rgba(28,78,216,.28),inset 0 1px 0 rgba(255,255,255,.18);transition:.15s;font-family:inherit}
+  .btn:hover{filter:brightness(1.07);transform:translateY(-.5px)}
+  .btn.soft{background:#fff;color:var(--ink2);border:1px solid var(--line);box-shadow:0 1px 2px rgba(13,23,48,.05)}
+  .btn.soft:hover{border-color:#c9d6ea;background:#f8fafc;filter:none}
+  .btn.ghost{background:transparent;color:#c7d2e5;border:1px solid rgba(255,255,255,.2)}
+  .btn.ghost:hover{background:rgba(255,255,255,.08);filter:none}
+  .btn.block{width:100%}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .field label{font-size:12px;font-weight:650;color:var(--ink2)}
+  .input,.select{width:100%;padding:11px 13px;border:1px solid #dbe3ee;border-radius:11px;background:#fff;
+    font-size:13.6px;color:var(--ink);outline:none;transition:.15s;font-family:inherit}
+  .input:focus,.select:focus{border-color:#9db9f7;box-shadow:0 0 0 4px rgba(47,107,255,.11)}
+  .select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round'><path d='m6 9 6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;background:#eef2f8;color:#475569}
+  .chip.good{background:#e7f7f0;color:#067a55}
+  .flash{border-radius:11px;padding:11px 14px;font-size:12.8px;margin-bottom:14px;font-weight:550}
+  .flash.error{background:#fdecef;color:#9f1239;border:1px solid #f9cfd8}
+  .flash.success{background:#e7f7f0;color:#067a55;border:1px solid #c7ecdc}
+  .muted{color:var(--muted)} .small{font-size:12.5px} .tiny{font-size:11.5px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  .grid{display:grid;gap:16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(13,23,48,.05)}
+  @media(max-width:860px){.responsive-2{grid-template-columns:1fr!important}}
+</style>
+</head>
+<body>
+{% block body %}{% endblock %}
+</body>
+</html>

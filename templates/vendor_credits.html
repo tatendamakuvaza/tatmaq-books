@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <span class="count-pill">{{ rows|length }} vendor credits</span>
+  <span class="chip chip-info">{{ icon('percent', 12) }} Reduces cost and reverses input VAT</span>
+  <div style="margin-left:auto"><a class="btn" href="/vendor-credits/new">{{ icon('plus', 15) }} New vendor credit</a></div>
+</div>
+
+<div class="dash-grid g3 mb2">
+  <div class="hero-mini"><span class="icon-circle green-bg">{{ icon('receipt', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">CREDITS RECEIVED</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ sym }}{{ totals.total|money }}</div></div></div>
+  <div class="hero-mini"><span class="icon-circle amber-bg">{{ icon('wallet', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">STILL TO USE</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ sym }}{{ totals.available|money }}</div></div></div>
+  <div class="hero-mini"><span class="icon-circle blue-bg">{{ icon('book', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">LEDGER TREATMENT</div>
+      <div class="small" style="font-weight:650;margin-top:3px">Dr Payables · Cr Input VAT · Cr Supplier credits</div></div></div>
+</div>
+
+<div class="card">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Credit</th><th>Supplier</th><th>Against bill</th><th>Date</th><th>Reason</th>
+        <th class="num">Total</th><th class="num">Available</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        {% set avail = r.total - r.applied %}
+        <tr>
+          <td class="strong">{{ r.number }}</td>
+          <td><div class="row" style="gap:8px">
+            <div class="avatar sm" style="background:hsl({{ r.party|avatar_hue }} 70% 93%);color:hsl({{ r.party|avatar_hue }} 55% 32%)">{{ r.party|initials }}</div>
+            <span>{{ r.party }}</span></div></td>
+          <td class="muted small">{{ r.bill_no or '—' }}</td>
+          <td class="muted">{{ r.date|ddate }}</td>
+          <td class="muted small">{{ r.reason }}</td>
+          <td class="num strong">{{ sym }}{{ r.total|money }}</td>
+          <td class="num {{ 'pos' if avail > 0.01 else 'muted' }}">{{ sym }}{{ avail|money }}</td>
+          <td><span class="chip {{ 'chip-good' if r.status == 'applied' else ('chip-warn' if r.status == 'partial' else 'chip-info') }}">{{ r.status|capitalize }}</span></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8"><div class="empty">{{ icon('receipt', 30) }}<b>No vendor credits yet</b>
+          Record one when a supplier credits you for returns, rebates or overcharges.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

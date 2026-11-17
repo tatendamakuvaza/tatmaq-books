@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <div class="tabs">
+    <a class="{{ 'active' if status == 'all' }}" href="/invoices">All</a>
+    <a class="{{ 'active' if status == 'unpaid' }}" href="/invoices?status=unpaid">Unpaid</a>
+    <a class="{{ 'active' if status == 'overdue' }}" href="/invoices?status=overdue">Overdue {% if overdue_count %}<span class="chip chip-bad" style="margin-left:4px;padding:0 7px">{{ overdue_count }}</span>{% endif %}</a>
+    <a class="{{ 'active' if status == 'paid' }}" href="/invoices?status=paid">Paid</a>
+  </div>
+  <form class="search-inline" method="get" action="/invoices">
+    <input type="hidden" name="status" value="{{ status }}">
+    {{ icon('search', 15) }}
+    <input class="input" name="q" value="{{ q }}" placeholder="Search number or customer">
+  </form>
+  <span class="count-pill">{{ rows|length }} invoices</span>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <a class="btn soft" href="/quotes">{{ icon('quote', 15) }} Quotations</a>
+    <a class="btn" href="/invoices/new">{{ icon('plus', 15) }} New invoice</a>
+  </div>
+</div>
+
+<div class="dash-grid g3 mb2">
+  <div class="hero-mini">
+    <span class="icon-circle blue-bg">{{ icon('file', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">TOTAL INVOICED (FILTERED)</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ sym }}{{ totals.total|money }}</div></div>
+  </div>
+  <div class="hero-mini">
+    <span class="icon-circle amber-bg">{{ icon('clock', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">OUTSTANDING BALANCE</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ sym }}{{ totals.balance|money }}</div></div>
+  </div>
+  <div class="hero-mini">
+    <span class="icon-circle red-bg">{{ icon('alert', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">OVERDUE INVOICES</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ overdue_count }}</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="tbl-wrap">
+    <table class="tbl" id="inv-table">
+      <thead><tr>
+        <th>Invoice</th><th>Customer</th><th>Date</th><th>Due date</th>
+        <th class="num">Total</th><th class="num">Balance</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for r in rows %}
+        {% set st = status_of(r) %}
+        <tr class="row-link">
+          <td><a class="link-strong" href="/invoices/{{ r.id }}">{{ r.number }}</a>
+            {% if r.quote_id %}<span class="sub">from quotation</span>{% endif %}</td>
+          <td><div class="row" style="gap:8px">
+            <div class="avatar sm" style="background:hsl({{ r.party|avatar_hue }} 70% 93%);color:hsl({{ r.party|avatar_hue }} 55% 32%)">{{ r.party|initials }}</div>
+            <span>{{ r.party }}</span></div></td>
+          <td class="muted">{{ r.date|ddate }}</td>
+          <td class="{{ 'neg' if st.label == 'Overdue' else 'muted' }}">{{ r.due_date|ddate }}</td>
+          <td class="num strong">{{ sym }}{{ r.total|money }}</td>
+          <td class="num">{{ sym }}{{ (r.total - r.amount_paid)|money }}</td>
+          <td><span class="chip {{ st.cls }}">{{ st.label }}</span></td>
+          <td class="right"><a class="btn ghost sm" href="/invoices/{{ r.id }}">{{ icon('eye', 14) }}</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8"><div class="empty">{{ icon('file', 30) }}<b>No invoices match this filter</b>Create your first invoice to start the sales ledger.</div></td></tr>
+      {% endfor %}
+      </tbody>
+      {% if rows %}
+      <tfoot class="tfoot"><tr>
+        <td colspan="4">{{ rows|length }} invoices</td>
+        <td class="num">{{ sym }}{{ totals.total|money }}</td>
+        <td class="num">{{ sym }}{{ totals.balance|money }}</td><td colspan="2"></td>
+      </tr></tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+{% endblock %}

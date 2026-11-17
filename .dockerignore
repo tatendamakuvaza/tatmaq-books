@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.git/
+.gitignore
+tatmaq.db
+*.db
+backups/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+shots/

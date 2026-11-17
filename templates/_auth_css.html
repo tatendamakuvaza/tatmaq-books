@@ -1,0 +1,209 @@
+<style>
+  /* ── Sign-in / registration surface ───────────────────────────────────────
+     The card is the only element in normal flow, so the grid centres it on the
+     viewport exactly — phone, tablet or laptop. Everything inside the card is
+     organised on one centre line: mark, name, label, rule, lede. The form
+     beneath it stays left-aligned, because labels you read while typing should
+     not move around.                                                      */
+  .auth{position:relative;display:grid;place-items:center;
+    min-height:100vh;min-height:100svh;padding:84px 20px;overflow-x:clip;
+    background:
+      radial-gradient(960px 700px at 0% -20%, #9fd4b4 0%, rgba(159,212,180,0) 70%),
+      radial-gradient(940px 780px at 104% -8%, #a8cbee 0%, rgba(168,203,238,0) 68%),
+      radial-gradient(860px 640px at 96% 122%, #eecbb5 0%, rgba(238,203,181,0) 70%),
+      radial-gradient(800px 700px at 14% 118%, #aedec2 0%, rgba(174,222,194,0) 66%),
+      linear-gradient(164deg,#c9e7d2 0%,#c7e0f4 46%,#cfedd6 100%)}
+  .auth::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;
+    background-image:linear-gradient(rgba(11,58,46,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(11,58,46,.055) 1px,transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(80% 66% at 14% 2%,#000 0,transparent 74%);
+    mask-image:radial-gradient(80% 66% at 14% 2%,#000 0,transparent 74%)}
+  .auth::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 46%,rgba(255,255,255,.55) 0,rgba(255,255,255,0) 46%,rgba(9,52,42,.09) 100%)}
+
+  .auth-deco{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .auth-grain{position:absolute;inset:0;opacity:.35;mix-blend-mode:multiply;
+    background-image:radial-gradient(rgba(11,58,46,.16) .5px,transparent .5px);background-size:4px 4px}
+  .auth-rings{position:absolute;right:-330px;bottom:-300px;width:900px;height:900px}
+
+  .auth-stack{position:relative;z-index:1;width:100%;max-width:452px}
+  .auth-stack.wide{max-width:588px}
+
+  /* ── the card ───────────────────────────────────────────────────────────── */
+  .auth-card{position:relative;width:100%;
+    background:rgba(255,255,255,.94);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);
+    border:1px solid rgba(12,66,52,.12);border-top:3px solid #0d4a3a;border-radius:22px;
+    padding:32px 38px 25px;
+    box-shadow:inset 0 1px 0 #fff,0 34px 70px -36px rgba(8,52,41,.5),0 12px 28px -24px rgba(8,52,41,.38)}
+  .auth-card.wide{padding:30px 38px 24px}
+
+  /* ── centred masthead ───────────────────────────────────────────────────── */
+  .auth-mast{text-align:center}
+  .auth-logo{width:54px;height:54px;margin:0 auto 11px;border-radius:15px;display:grid;place-items:center;
+    font-weight:800;font-size:26px;color:#fff;background:linear-gradient(155deg,#2f6bff,#17379f);
+    box-shadow:0 10px 22px -12px rgba(28,78,216,.9),inset 0 1px 0 rgba(255,255,255,.35)}
+  .auth-name{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-weight:600;
+    font-size:25px;line-height:1.15;letter-spacing:-.014em;color:#0a3328}
+  .auth-label{margin-top:8px;font-size:10.8px;font-weight:800;letter-spacing:.28em;
+    text-transform:uppercase;color:#b8492f}
+  .auth-hr{height:1px;margin:19px 0 17px;
+    background:linear-gradient(90deg,rgba(13,74,58,0),#d6e4db 16%,#d6e4db 84%,rgba(13,74,58,0))}
+  .auth-lede{text-align:center;font-size:15.2px;line-height:1.45;color:#4f8474;margin:0 0 22px}
+
+  /* ── the form ───────────────────────────────────────────────────────────── */
+  .auth .field{margin-bottom:15px;gap:6px}
+  .auth .field label{font-size:13.8px;font-weight:600;letter-spacing:0;text-transform:none;color:#3f6b5e}
+  .auth .input{padding:14px 15px;border:1px solid #d3e2d9;border-radius:12px;background:#fdfefd;font-size:15.4px;color:#0a3328;
+    box-shadow:inset 0 1px 2px rgba(10,58,46,.05)}
+  .auth .input::placeholder{color:#9cb5aa}
+  .auth .input:focus{border-color:#5f9d88;box-shadow:0 0 0 4px rgba(13,74,58,.11);background:#fff}
+  .auth .select{padding:14px 15px;border:1px solid #d3e2d9;border-radius:12px;background-color:#fdfefd;font-size:15.2px;color:#0a3328}
+  .auth .select:focus{border-color:#5f9d88;box-shadow:0 0 0 4px rgba(13,74,58,.11);background-color:#fff}
+  .auth .tiny.muted{color:#6d8d81;font-size:12.4px;margin-top:2px}
+  .auth-check{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13.6px;color:#5b7d71;
+    margin:4px 0 19px;cursor:pointer;user-select:none}
+  .auth-check input{accent-color:#0d4a3a;width:16px;height:16px;margin:0}
+  .auth .btn.block{padding:14.5px 20px;border-radius:12px;font-size:15.4px;letter-spacing:.012em;
+    background:linear-gradient(170deg,#12553f,#0a3b2e);
+    box-shadow:0 1px 2px rgba(8,44,34,.45),0 12px 24px -14px rgba(8,52,41,.75),inset 0 1px 0 rgba(255,255,255,.14)}
+  .auth .btn.block:hover{background:linear-gradient(170deg,#17604a,#0b4234)}
+
+  /* links and footnote share the centre line */
+  .auth-links{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;
+    font-size:13.6px;flex-wrap:wrap;text-align:center}
+  .auth-links a{color:#0d4a3a;font-weight:650}
+  .auth-links a:hover{color:#b8492f}
+  .auth-links span{color:#a9c2b7}
+  .auth .flash{border-radius:12px;margin-bottom:16px;font-size:13.8px;text-align:center;padding:13px 16px}
+
+  .auth-foot{position:absolute;left:50%;top:calc(100% + 18px);transform:translateX(-50%);
+    width:100%;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:0 7px;
+    text-align:center;font-size:13.2px;color:#5b7d71}
+  .auth-foot .ft-lbl{white-space:nowrap}
+  .auth-foot a{color:#0d4a3a;font-weight:700;text-decoration:none;border-bottom:1px solid rgba(13,74,58,.25);padding-bottom:1px}
+  .auth-foot a:hover{color:#b8492f;border-bottom-color:rgba(184,73,47,.5)}
+  .auth-foot .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.6px;color:#6d8d81}
+
+  /* ── small screens ──────────────────────────────────────────────────────── */
+  @media(max-width:640px){
+    /* footnote reads as two deliberate centred lines rather than one broken one */
+    .auth-foot .ft-lbl{flex-basis:100%}
+  }
+  @media(max-width:520px){
+    .auth{padding:70px 15px}
+    .auth-card{padding:26px 21px 20px;border-radius:19px}
+    .auth-card.wide{padding:24px 20px 19px}
+    .auth-logo{width:48px;height:48px;font-size:23px;border-radius:14px;margin-bottom:10px}
+    .auth-name{font-size:22.5px}
+    .auth-hr{margin:16px 0 14px}
+    .auth-lede{font-size:14.2px;margin-bottom:18px}
+    .auth-stack,.auth-stack.wide{max-width:100%}
+    .auth-foot{top:calc(100% + 13px);font-size:12.2px;line-height:1.5;padding:0 4px}
+    .auth-rings{opacity:.5;right:-560px;bottom:-420px}
+    .auth-card .grid{grid-template-columns:1fr 1fr!important;gap:0 10px!important}
+    .auth .field{margin-bottom:13px}
+  }
+  /* the wider registration card needs a little more trimming on phones */
+  @media(max-width:560px){
+    .auth-card.wide{padding:21px 18px 16px}
+    .auth-card.wide .auth-logo{width:42px;height:42px;font-size:20px;margin-bottom:8px}
+    .auth-card.wide .auth-hr{margin:13px 0 11px}
+    .auth-card.wide .auth-lede{margin-bottom:13px;font-size:13.6px}
+    .auth-card.wide .field{margin-bottom:10px}
+    .auth-card.wide .input,.auth-card.wide .select{padding:12px 13px;font-size:14.6px}
+  }
+  /* narrow AND short: the registration card sheds its ornaments to stay whole */
+  @media(max-width:560px) and (max-height:720px){
+    .auth{padding:56px 14px}
+    .auth-card.wide .auth-lede{display:none}
+    .auth-card.wide .auth-hr{margin:11px 0 9px}
+    .auth-card.wide .auth-logo{width:38px;height:38px;font-size:18px;border-radius:11px;margin-bottom:7px}
+    .auth-card.wide .auth-name{font-size:20px}
+    .auth-card.wide .field{margin-bottom:9px}
+    .auth-card.wide .input,.auth-card.wide .select{padding:11px 12px;font-size:14.2px}
+  }
+  @media(max-width:560px) and (max-height:600px){
+    .auth{padding:40px 13px}
+    .auth-card .tiny.muted{display:none}
+    .auth-card.wide{padding:14px 15px 12px}
+    .auth-card.wide .auth-logo{width:32px;height:32px;font-size:15px;border-radius:9px;margin-bottom:6px}
+    .auth-card.wide .auth-name{font-size:18px}
+    .auth-card.wide .auth-label{font-size:8.8px;letter-spacing:.2em;margin-top:3px}
+    .auth-card.wide .auth-hr{margin:9px 0 8px}
+    .auth-card.wide .field{margin-bottom:6px;gap:4px}
+    .auth-card.wide .field label{font-size:12px}
+    .auth-card.wide .input,.auth-card.wide .select{padding:9px 11px;font-size:13.4px;border-radius:9px}
+    .auth-card.wide .btn.block{padding:10px 14px;font-size:13.6px;border-radius:9px}
+    .auth-card.wide .auth-links{margin-top:8px;font-size:11.6px}
+    .auth-foot{font-size:11.2px;top:calc(100% + 10px)}
+  }
+  @media(max-width:300px){ .auth-card .grid{grid-template-columns:1fr!important} }
+
+  /* short viewports: shed the ornaments, keep the card whole and centred */
+  @media(max-height:800px){
+    .auth{padding:58px 16px}
+    .auth-foot{top:calc(100% + 11px)}
+    .auth-card,.auth-card.wide{padding:21px 26px 16px}
+    .auth-logo{width:42px;height:42px;font-size:20px;border-radius:12px;margin-bottom:8px}
+    .auth-name{font-size:20.5px}
+    .auth-label{margin-top:4px;font-size:9.2px}
+    .auth-hr{margin:11px 0 10px}
+    .auth-lede{margin-bottom:12px;font-size:12.4px}
+    .auth .field{margin-bottom:9px}
+    .auth .input,.auth .select{padding:10px 12px}
+    .auth-check{margin:1px 0 12px}
+    .auth .btn.block{padding:11px 16px}
+    .auth-links{margin-top:11px}
+    .auth-card .tiny.muted{display:none}
+  }
+  @media(max-height:700px){
+    .auth{padding:52px 14px}
+    .auth-foot{top:calc(100% + 9px)}
+    .auth-card,.auth-card.wide{padding:14px 20px 11px;border-radius:15px}
+    .auth-logo{width:32px;height:32px;font-size:15px;border-radius:9px;margin-bottom:6px}
+    .auth-name{font-size:16.6px}
+    .auth-label{font-size:8.6px;letter-spacing:.22em;margin-top:3px}
+    .auth-hr{margin:9px 0 8px}
+    .auth-lede{font-size:11.8px;margin-bottom:10px}
+    .auth .field{margin-bottom:7px}
+    .auth .field label{font-size:11.6px}
+    .auth .input,.auth .select{padding:8.5px 11px;font-size:13px}
+    .auth-check{margin:0 0 10px;font-size:11.4px}
+    .auth .btn.block{padding:10px 14px;font-size:13px}
+    .auth-links{margin-top:9px;font-size:11.4px}
+  }
+  /* very short screens: the lede is the first thing to go, masthead stays */
+  @media(max-height:600px){
+    .auth{padding:46px 14px}
+    .auth-lede{display:none}
+    .auth-hr{margin:9px 0 8px}
+    .auth-card,.auth-card.wide{padding:12px 18px 10px}
+    .auth-logo{width:30px;height:30px;font-size:14px;margin-bottom:5px}
+    .auth-name{font-size:16px}
+    .auth-label{font-size:8.4px;margin-top:2px}
+    .auth .field{margin-bottom:6px}
+    .auth .field label{font-size:11.4px}
+    .auth .input,.auth .select{padding:8px 10px;font-size:12.8px}
+    .auth-check{margin:0 0 8px;font-size:11.2px}
+    .auth .btn.block{padding:9px 13px;font-size:12.8px}
+    .auth-links{margin-top:8px;font-size:11.2px}
+  }
+  /* landscape phones: centre the group as a column so nothing is cut off */
+  @media(max-height:520px){
+    .auth .pair{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+  }
+  @media(max-height:480px){
+    .auth{padding:14px 14px}
+    .auth{place-items:center}
+    .auth-logo{width:28px;height:28px;font-size:13px;margin-bottom:5px}
+    .auth-name{font-size:15px}
+    .auth-hr,.auth-lede{display:none}
+    .auth-card{padding:12px 18px 10px}
+    .auth-foot{top:calc(100% + 7px);font-size:10.2px}
+    .auth .field{margin-bottom:6px}
+    .auth .input,.auth .select{padding:7.5px 10px;font-size:12.6px;border-radius:9px}
+    .auth .btn.block{padding:8.5px 12px;font-size:12.6px;border-radius:9px}
+    .auth-links{margin-top:7px;font-size:11px}
+    .auth .flash{padding:8px 11px;margin-bottom:9px;font-size:11.4px}
+  }
+</style>

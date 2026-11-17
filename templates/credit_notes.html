@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <span class="count-pill">{{ rows|length }} credit notes</span>
+  <span class="chip chip-info">{{ icon('percent', 12) }} Reduces revenue and reverses VAT</span>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <a class="btn soft" href="/reports/aging">{{ icon('clock', 15) }} Aging</a>
+    <a class="btn" href="/credit-notes/new">{{ icon('plus', 15) }} New credit note</a>
+  </div>
+</div>
+
+<div class="dash-grid g3 mb2">
+  <div class="hero-mini"><span class="icon-circle red-bg">{{ icon('receipt', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">CREDITED TO DATE</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ sym }}{{ totals.total|money }}</div></div></div>
+  <div class="hero-mini"><span class="icon-circle amber-bg">{{ icon('wallet', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">CREDIT STILL AVAILABLE</div>
+      <div style="font-size:21px;font-weight:750;letter-spacing:-.02em">{{ sym }}{{ totals.available|money }}</div></div></div>
+  <div class="hero-mini"><span class="icon-circle blue-bg">{{ icon('book', 18) }}</span>
+    <div><div class="tiny faint" style="font-weight:700;letter-spacing:.06em">LEDGER TREATMENT</div>
+      <div class="small" style="font-weight:650;margin-top:3px">Dr Sales returns · Dr VAT · Cr Customer credits</div></div></div>
+</div>
+
+<div class="card">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Credit note</th><th>Customer</th><th>Against</th><th>Date</th><th>Reason</th>
+        <th class="num">Total</th><th class="num">Available</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        {% set avail = r.total - r.applied - r.refunded %}
+        <tr>
+          <td class="strong">{{ r.number }}</td>
+          <td><div class="row" style="gap:8px">
+            <div class="avatar sm" style="background:hsl({{ r.party|avatar_hue }} 70% 93%);color:hsl({{ r.party|avatar_hue }} 55% 32%)">{{ r.party|initials }}</div>
+            <span>{{ r.party }}</span></div></td>
+          <td class="muted small">{{ r.invoice_no or '—' }}</td>
+          <td class="muted">{{ r.date|ddate }}</td>
+          <td class="muted small">{{ r.reason }}</td>
+          <td class="num strong">{{ sym }}{{ r.total|money }}</td>
+          <td class="num {{ 'pos' if avail > 0.01 else 'muted' }}">{{ sym }}{{ avail|money }}</td>
+          <td>
+            <span class="chip {{ 'chip-good' if r.status in ('applied','refunded') else ('chip-warn' if r.status == 'partial' else 'chip-info') }}">
+              {{ r.status|capitalize }}</span>
+          </td>
+          <td class="right nowrap">
+            <a class="btn sm {{ 'soft' if avail <= 0.01 else '' }}" href="/credit-notes/{{ r.id }}">
+              {{ 'Open' if avail > 0.01 else 'View' }}</a>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="9"><div class="empty">{{ icon('receipt', 30) }}<b>No credit notes yet</b>
+          Issue one when goods come back or an invoice was overstated.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="callout info mt2">{{ icon('sparkle', 15) }} <div><b>Why this matters:</b> a credit note is not a deletion —
+  it posts a reversing journal so the audit trail, VAT return and customer statement all stay correct.</div></div>
+{% endblock %}

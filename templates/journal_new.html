@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<form method="post" action="/journal/new">
+  <div class="dash-grid g23">
+    <div class="card">
+      <div class="card-h"><div><h3>Manual journal</h3><div class="sub">For accruals, corrections and adjustments — must balance before posting</div></div></div>
+      <div class="card-b">
+        <div class="form-grid fg3">
+          <div class="field"><label>Date</label><input class="input" type="date" name="date" value="{{ today }}"></div>
+          <div class="field"><label>Reference</label><input class="input" name="reference" placeholder="e.g. ACC-09"></div>
+          <div class="field"><label>Memo</label><input class="input" name="memo" placeholder="Accrual for December audit fees" required></div>
+        </div>
+        <div class="lines-scroll"><table class="lines-table">
+          <thead><tr><th style="width:33%">Account</th><th style="width:30%">Description</th><th style="width:16%">Debit</th><th style="width:16%">Credit</th></tr></thead>
+          <tbody>
+          {% for i in range(8) %}
+            <tr>
+              <td><select class="select" name="account_id">
+                <option value="">— account —</option>
+                {% for a in accounts %}<option value="{{ a.id }}">{{ a.code }} · {{ a.name }}</option>{% endfor %}
+              </select></td>
+              <td><input class="input" name="desc" placeholder="line description"></td>
+              <td><input class="input" name="debit" type="number" step="0.01" placeholder="0.00"></td>
+              <td><input class="input" name="credit" type="number" step="0.01" placeholder="0.00"></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table></div>
+        <div class="form-actions mt2">
+          <button class="btn" type="submit">{{ icon('check', 15) }} Post journal</button>
+          <a class="btn soft" href="/journal">Cancel</a>
+          <span class="small muted" style="margin-left:auto">The server validates Dr = Cr and rejects unbalanced entries.</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-h"><div><h3>Common adjustments</h3></div></div>
+        <div class="card-b small" style="color:var(--ink-2);line-height:1.8">
+          <b>Accrued expenses</b><br><span class="muted">Dr Expense · Cr Accrued Expenses</span>
+          <div class="divider" style="margin:10px 0"></div>
+          <b>Prepayments</b><br><span class="muted">Dr Prepaid · Cr Bank, release monthly</span>
+          <div class="divider" style="margin:10px 0"></div>
+          <b>Owner drawings</b><br><span class="muted">Dr Drawings · Cr Bank</span>
+          <div class="divider" style="margin:10px 0"></div>
+          <b>Depreciation top-up</b><br><span class="muted">Dr Depreciation · Cr Accum. Depreciation</span>
+        </div>
+      </div>
+      <div class="callout warn mt2">{{ icon('alert', 15) }} <div>Manual journals bypass document controls — every post is traceable to a named user in production.</div></div>
+    </div>
+  </div>
+</form>
+{% endblock %}

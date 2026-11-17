@@ -1,0 +1,59 @@
+{% extends "_public_head.html" %}
+{% block title %}Sign in · Tatmaq Books{% endblock %}
+{% block body %}
+{% include "_auth_css.html" %}
+
+<div class="auth">
+{% include "_auth_motif.html" %}
+
+  <div class="auth-stack">
+
+    <div class="auth-card">
+
+      <div class="auth-mast">
+        <span class="auth-logo">T</span>
+        <div class="auth-name">Tatmaq Books</div>
+        <div class="auth-label">Workspace sign-in</div>
+      </div>
+      <div class="auth-hr"></div>
+      <p class="auth-lede">Your books, in order.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+      {% endwith %}
+
+      <form method="post" action="/login">
+        <input type="hidden" name="next" value="{{ request.args.get('next','') }}">
+        <div class="field"><label for="auth-email">Email</label>
+          <input class="input" id="auth-email" type="email" name="email" value="{{ email or '' }}"
+                 placeholder="you@company.co.zw" autocomplete="email" required autofocus></div>
+        <div class="field"><label for="auth-pass">Password</label>
+          <input class="input" id="auth-pass" type="password" name="password"
+                 placeholder="••••••••" autocomplete="current-password" required></div>
+        <label class="auth-check"><input type="checkbox" name="remember" checked> Keep me signed in</label>
+        <button class="btn block" type="submit">Sign in</button>
+      </form>
+
+      <div class="auth-links">
+        <a href="/register">Create a workspace</a><span>·</span><a href="/demo">Explore the demo</a>
+      </div>
+    </div>
+
+    <div class="auth-foot">
+      <span class="ft-lbl">Demo access</span>
+      <a href="#" id="fill-demo">owner@tatmaqbooks.co.zw</a>
+      <span class="mono">/ demo1234</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.getElementById('fill-demo').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('auth-email').value = 'owner@tatmaqbooks.co.zw';
+    document.getElementById('auth-pass').value = 'demo1234';
+    document.getElementById('auth-pass').focus();
+  });
+</script>
+{% endblock %}

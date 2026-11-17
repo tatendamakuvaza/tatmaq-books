@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar">
+  <span class="count-pill">{{ groups.values()|map('length')|sum }} accounts</span>
+  <span class="chip chip-info">{{ profiles[company.industry].label }} template</span>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <a class="btn soft sm" href="/reports/tb">{{ icon('chart', 14) }} Trial balance</a>
+    <a class="btn soft sm" href="/setup">{{ icon('layers', 14) }} Change template</a>
+  </div>
+</div>
+<div class="dash-grid g2">
+{% for typ, label in labels.items() %}
+  <div class="card">
+    <div class="card-h">
+      <div><h3>{{ label }}</h3><div class="sub">{{ groups[typ]|length }} accounts · natural balance</div></div>
+      <div class="card-actions">
+        <span class="chip {{ {'asset':'chip-info','liability':'chip-warn','equity':'chip-dark','income':'chip-good','expense':'chip-bad'}[typ] }}">
+          {{ sym }}{{ groups[typ]|sum(attribute='balance')|compact }}
+        </span>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl compact">
+        <tbody>
+        {% for a in groups[typ] %}
+          <tr>
+            <td class="mono faint" style="width:70px">{{ a.code }}</td>
+            <td>{{ a.name }}</td>
+            <td class="num {{ 'muted' if a.balance == 0 }}" style="width:130px">{{ sym }}{{ a.balance|money }}</td>
+            <td style="width:40px" class="right">
+              {% if typ in ['income','expense'] %}<a class="btn ghost sm" href="/reports/gl?account_id={{ a.id }}" title="Ledger">{{ icon('eye', 13) }}</a>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

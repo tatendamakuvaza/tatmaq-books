@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% block content %}
+{% set sym = company.symbol %}
+<div class="toolbar no-print">
+  <a class="btn ghost sm" href="/purchase-orders">{{ icon('chevron', 14) }} All purchase orders</a>
+  {% set cls = {'draft':'chip-muted','sent':'chip-info','partial':'chip-warn','received':'chip-good','billed':'chip-dark'} %}
+  <span class="chip {{ cls.get(po.status,'chip-muted') }}">{{ po.status|capitalize }}</span>
+  <div style="margin-left:auto"><button class="btn soft sm" onclick="window.print()">{{ icon('print', 14) }} Print</button></div>
+</div>
+
+<div class="card mb2">
+  <div class="card-b" style="padding:28px 32px">
+    <div class="row between" style="align-items:flex-start;flex-wrap:wrap;gap:14px">
+      <div>
+        <div class="tiny faint" style="font-weight:700;letter-spacing:.08em">PURCHASE ORDER</div>
+        <div style="font-size:22px;font-weight:750;letter-spacing:-.02em;margin-top:2px">{{ po.number }}</div>
+        <div class="small muted">Issued {{ po.date|ddate }}{% if po.delivery_date %} · expected {{ po.delivery_date|ddate }}{% endif %}</div>
+      </div>
+      <div class="right">
+        <div class="tiny faint" style="font-weight:700;letter-spacing:.08em">SUPPLIER</div>
+        <div style="font-weight:700;margin-top:2px">{{ po.party }}</div>
+        <div class="small muted">{{ po.email or '' }} {{ po.phone or '' }}</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <table class="tbl">
+      <thead><tr><th>Description</th><th>Account</th><th class="num">Ordered</th><th class="num">Received</th>
+        <th class="num">Unit cost</th><th class="num">Amount</th></tr></thead>
+      <tbody>
+      {% for l in lines %}
+        <tr>
+          <td style="font-weight:600">{{ l.description }}</td>
+          <td class="muted small">{{ l.account }}</td>
+          <td class="num">{{ l.qty|num(2) }}</td>
+          <td class="num">
+            <span class="chip {{ 'chip-good' if l.qty_received >= l.qty - 0.001 else ('chip-warn' if l.qty_received > 0 else 'chip-muted') }}">
+              {{ l.qty_received|num(2) }}
+            </span>
+          </td>
+          <td class="num">{{ sym }}{{ l.unit_cost|money }}</td>
+          <td class="num strong">{{ sym }}{{ l.amount|money }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="totals-box">
+      <div class="totals-row"><span>Subtotal</span><b>{{ sym }}{{ po.subtotal|money }}</b></div>
+      <div class="totals-row"><span>{{ company.tax_name }}</span><b>{{ sym }}{{ po.tax|money }}</b></div>
+      <div class="totals-row grand"><span>Order total</span><b>{{ sym }}{{ po.total|money }}</b></div>
+    </div>
+    {% if po.notes %}<div class="divider"></div><div class="small muted">{{ po.notes }}</div>{% endif %}
+  </div>
+</div>
+
+<div class="no-print dash-grid g2">
+  <div class="card">
+    <div class="card-h"><div><h3>Record goods received</h3><div class="sub">Confirm quantities actually delivered</div></div></div>
+    <div class="card-b">
+      <form method="post" action="/purchase-orders/{{ po.id }}/receive">
+        {% for l in lines %}
+        <div class="row between" style="gap:10px;padding:6px 0;border-bottom:1px dashed var(--line-2)">
+          <div style="min-width:0">
+            <div class="small" style="font-weight:650">{{ l.description }}</div>
+            <div class="tiny muted">Ordered {{ l.qty|num(2) }} · received {{ l.qty_received|num(2) }}</div>
+          </div>
+          <input class="input" style="width:104px" type="number" step="0.01" min="0"
+                 max="{{ l.qty - l.qty_received }}" name="recv_{{ l.id }}" value="0">
+        </div>
+        {% endfor %}
+        <button class="btn block mt2" {{ 'disabled' if po.status == 'billed' }}>{{ icon('truck', 15) }} Save receipt</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><div><h3>Convert to supplier bill</h3><div class="sub">Posts inventory/expense, input {{ company.tax_name }} and payables</div></div></div>
+    <div class="card-b">
+      {% if bill %}
+      <div class="callout info">{{ icon('check', 15) }} <div><b>Already billed</b> as
+        <a href="/bills/{{ bill.id }}">{{ bill.number }}</a>. Payments are recorded on the bill.</div></div>
+      {% else %}
+      <form method="post" action="/purchase-orders/{{ po.id }}/bill">
+        <div class="form-grid fg2">
+          <div class="field"><label>Bill date</label><input class="input" type="date" name="date" value="{{ now.isoformat() }}"></div>
+          <div class="field"><label>Due date</label><input class="input" type="date" name="due_date" value="{{ (now).isoformat() }}"></div>
+        </div>
+        <button class="btn good block">{{ icon('receipt', 15) }} Create bill from {{ po.number }}</button>
+      </form>
+      <p class="tiny muted mt1" style="margin-bottom:0">Received quantities are used where recorded; otherwise the ordered
+        quantity is billed in full.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
