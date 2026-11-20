@@ -30,3 +30,6 @@ Thumbs.db
 *.log
 .pytest_cache/
 .ruff_cache/
+
+# runtime data (database + secret) created by deploy-oci.sh
+data/

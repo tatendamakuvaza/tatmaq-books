@@ -35,6 +35,18 @@ Full walkthrough (empty-repo rules, Railway variables, volume mount) is in
 **REPO_SETUP.md**. CI runs `tests/smoke_test.py` on every push, so a red X means
 the build is not safe to deploy.
 
+**Free permanent hosting:** **DEPLOY_ORACLE_FREE.md** covers Oracle Cloud's
+Always Free tier (4 ARM cores / 24 GB RAM, no expiry). On any fresh Linux
+server the whole install is one command:
+
+```bash
+bash deploy-oci.sh --with-https
+```
+
+That installs Python and gunicorn, generates the secret, seeds the database,
+registers a systemd service, opens the firewall and obtains a free
+Let's Encrypt certificate.
+
 ## Run locally
 
 ```bash
